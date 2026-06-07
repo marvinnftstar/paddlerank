@@ -61,6 +61,10 @@ export function Hero() {
           >
             Join the Waitlist
           </a>
+
+          <p className="mt-4 inline-flex max-w-xs items-center justify-center rounded-full border border-court-green/60 bg-court-green/15 px-4 py-2 text-center text-xs font-black uppercase tracking-wide text-court-green sm:max-w-none sm:text-sm">
+            Limited early access: First 100 registered players only.
+          </p>
         </div>
       </div>
     </section>

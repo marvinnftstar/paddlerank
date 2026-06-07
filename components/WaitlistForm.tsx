@@ -112,6 +112,10 @@ export function WaitlistForm() {
           Tell us where you play and how you compete. Fields marked with * are
           required.
         </p>
+        <p className="mt-4 rounded-2xl border border-court-green/50 bg-court-green/15 px-4 py-3 text-sm font-black text-court-navy">
+          <span className="text-court-mint">Limited early access:</span> First
+          100 registered players only.
+        </p>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
