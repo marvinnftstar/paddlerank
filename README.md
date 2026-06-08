@@ -77,6 +77,32 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 Use `.env.example` as the safe template. Do not put real keys in documentation.
 
+## Google Login Setup
+
+PaddleRank uses Supabase Auth for Google Login.
+
+In Supabase:
+
+1. Go to **Authentication**.
+2. Go to **Providers**.
+3. Turn on **Google**.
+4. Add your Google OAuth client ID and client secret in Supabase.
+5. Add these redirect URLs:
+
+```text
+http://localhost:3000/auth/callback
+https://www.paddlerank.xyz/auth/callback
+```
+
+In Vercel, keep these existing environment variables:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+Do not add a Supabase service role key to frontend code.
+
 ## Run Locally
 
 Install dependencies:

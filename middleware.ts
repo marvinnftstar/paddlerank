@@ -1,0 +1,12 @@
+import type { NextRequest } from "next/server";
+import { updateSupabaseSession } from "@/lib/supabase/middleware";
+
+export async function middleware(request: NextRequest) {
+  return updateSupabaseSession(request);
+}
+
+export const config = {
+  matcher: [
+    "/((?!_next/|favicon.ico|.*\\.(?:css|js|map|svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
+};
