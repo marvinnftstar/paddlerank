@@ -54,8 +54,13 @@ create table if not exists waitlist_signups (
   skill_level text,
   preferred_play_type text,
   message text,
+  access_status text not null default 'pending',
   created_at timestamp with time zone default now()
 );
+
+alter table waitlist_signups
+add constraint waitlist_signups_access_status_check
+check (access_status in ('pending', 'approved', 'blocked'));
 
 alter table waitlist_signups enable row level security;
 
@@ -64,7 +69,23 @@ on waitlist_signups
 for insert
 to anon
 with check (true);
+
+create policy "Allow authenticated users to read own waitlist status"
+on waitlist_signups
+for select
+to authenticated
+using (lower(email) = lower(auth.jwt() ->> 'email'));
 ```
+
+Existing projects can use the local SQL file below to add the early access
+status column. Apply it manually in Supabase only after reviewing it:
+
+```text
+supabase/add_waitlist_access_status.sql
+```
+
+Only users with `access_status = 'approved'` can open `/dashboard`. New
+waitlist signups are `pending` by default.
 
 ## Environment Variables
 

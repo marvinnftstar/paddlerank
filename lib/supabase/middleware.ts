@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -42,14 +43,26 @@ export async function updateSupabaseSession(request: NextRequest) {
 
   if (!user && pathname.startsWith("/dashboard")) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set("next", pathname);
+    redirectUrl.pathname = "/early-access";
+    redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
+  if (user && pathname.startsWith("/dashboard")) {
+    const access = await checkWaitlistAccess(supabase, user, "middleware");
+
+    if (!access.isApproved) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/early-access";
+      redirectUrl.search = "";
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   if (user && pathname === "/login") {
+    const access = await checkWaitlistAccess(supabase, user, "middleware");
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/dashboard";
+    redirectUrl.pathname = access.isApproved ? "/dashboard" : "/early-access";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }

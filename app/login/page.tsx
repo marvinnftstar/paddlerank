@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./LoginForm";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -20,7 +21,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     } = await supabase.auth.getUser();
 
     if (user) {
-      redirect("/dashboard");
+      const access = await checkWaitlistAccess(supabase, user, "login");
+      redirect(access.isApproved ? "/dashboard" : "/early-access");
     }
   }
 

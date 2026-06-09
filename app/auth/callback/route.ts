@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -30,6 +31,20 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     return redirectToLogin("Google login failed. Please try again.");
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return redirectToLogin("Google login failed. Please try again.");
+  }
+
+  const access = await checkWaitlistAccess(supabase, user, "auth-callback");
+
+  if (!access.isApproved) {
+    return NextResponse.redirect(new URL("/early-access", requestUrl.origin));
   }
 
   return NextResponse.redirect(new URL(next, requestUrl.origin));

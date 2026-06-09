@@ -1,6 +1,9 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkWaitlistAccess } from "@/lib/waitlistAccess";
+
+export const dynamic = "force-dynamic";
 
 const stats = [
   {
@@ -48,7 +51,7 @@ export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    redirect("/login");
+    redirect("/early-access");
   }
 
   const {
@@ -56,7 +59,13 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/early-access");
+  }
+
+  const access = await checkWaitlistAccess(supabase, user, "dashboard");
+
+  if (!access.isApproved) {
+    redirect("/early-access");
   }
 
   const displayName =
