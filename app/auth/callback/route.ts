@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export async function GET(request: NextRequest) {
+  const startedAt = Date.now();
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const nextParam = requestUrl.searchParams.get("next") || "/dashboard";
@@ -11,6 +12,15 @@ export async function GET(request: NextRequest) {
       ? nextParam
       : "/dashboard";
 
+  function finish(response: NextResponse, result: string) {
+    console.log("[PaddleRank auth timing]", {
+      source: "auth-callback",
+      result,
+      duration_ms: Date.now() - startedAt,
+    });
+    return response;
+  }
+
   function redirectToLogin(errorMessage: string) {
     const loginUrl = new URL("/login", requestUrl.origin);
     loginUrl.searchParams.set("error", errorMessage);
@@ -18,19 +28,28 @@ export async function GET(request: NextRequest) {
   }
 
   if (!code) {
-    return redirectToLogin("Google login did not return an auth code.");
+    return finish(
+      redirectToLogin("Google login did not return an auth code."),
+      "missing-code",
+    );
   }
 
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return redirectToLogin("Supabase is not connected yet.");
+    return finish(
+      redirectToLogin("Supabase is not connected yet."),
+      "supabase-not-configured",
+    );
   }
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return redirectToLogin("Google login failed. Please try again.");
+    return finish(
+      redirectToLogin("Google login failed. Please try again."),
+      "session-exchange-failed",
+    );
   }
 
   const {
@@ -38,14 +57,23 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirectToLogin("Google login failed. Please try again.");
+    return finish(
+      redirectToLogin("Google login failed. Please try again."),
+      "user-validation-failed",
+    );
   }
 
   const access = await checkWaitlistAccess(supabase, user, "auth-callback");
 
   if (!access.isApproved) {
-    return NextResponse.redirect(new URL("/early-access", requestUrl.origin));
+    return finish(
+      NextResponse.redirect(new URL("/early-access", requestUrl.origin)),
+      "access-denied",
+    );
   }
 
-  return NextResponse.redirect(new URL(next, requestUrl.origin));
+  return finish(
+    NextResponse.redirect(new URL(next, requestUrl.origin)),
+    "access-approved",
+  );
 }
