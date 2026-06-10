@@ -5,25 +5,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export async function updateSupabaseSession(request: NextRequest) {
-  const startedAt = Date.now();
   const { pathname } = request.nextUrl;
-
-  function finish(response: NextResponse, result: string) {
-    console.log("[PaddleRank auth timing]", {
-      source: "middleware",
-      pathname,
-      result,
-      duration_ms: Date.now() - startedAt,
-    });
-    return response;
-  }
 
   let response = NextResponse.next({
     request,
   });
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return finish(response, "supabase-not-configured");
+    return response;
   }
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -57,8 +46,8 @@ export async function updateSupabaseSession(request: NextRequest) {
       ? "/login"
       : "/early-access";
     redirectUrl.search = "";
-    return finish(NextResponse.redirect(redirectUrl), "signed-out");
+    return NextResponse.redirect(redirectUrl);
   }
 
-  return finish(response, "signed-in");
+  return response;
 }

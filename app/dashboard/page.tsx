@@ -26,51 +26,23 @@ const nextSteps = [
 ];
 
 export default async function DashboardPage() {
-  const renderStartedAt = Date.now();
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    console.log("[PaddleRank auth timing]", {
-      source: "dashboard-total",
-      result: "supabase-not-configured",
-      duration_ms: Date.now() - renderStartedAt,
-    });
     redirect("/early-access");
   }
 
-  const getUserStartedAt = Date.now();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  console.log("[PaddleRank auth timing]", {
-    source: "dashboard-get-user",
-    result: user ? "signed-in" : "signed-out",
-    duration_ms: Date.now() - getUserStartedAt,
-  });
 
   if (!user) {
-    console.log("[PaddleRank auth timing]", {
-      source: "dashboard-total",
-      result: "signed-out",
-      duration_ms: Date.now() - renderStartedAt,
-    });
     redirect("/early-access");
   }
 
-  const waitlistStartedAt = Date.now();
   const access = await checkWaitlistAccess(supabase, user, "dashboard");
-  console.log("[PaddleRank auth timing]", {
-    source: "dashboard-waitlist",
-    result: access.isApproved ? "approved" : "denied",
-    duration_ms: Date.now() - waitlistStartedAt,
-  });
 
   if (!access.isApproved) {
-    console.log("[PaddleRank auth timing]", {
-      source: "dashboard-total",
-      result: "access-denied",
-      duration_ms: Date.now() - renderStartedAt,
-    });
     redirect("/early-access");
   }
 
@@ -80,17 +52,11 @@ export default async function DashboardPage() {
     user.email ||
     "Player";
 
-  const profileQueryStartedAt = Date.now();
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("pickleball_club, profile_completed")
     .eq("user_id", user.id)
     .maybeSingle<ProfileRow>();
-  console.log("[PaddleRank auth timing]", {
-    source: "dashboard-profile-query",
-    result: profileError ? "failed" : "completed",
-    duration_ms: Date.now() - profileQueryStartedAt,
-  });
 
   const stats = [
     {
@@ -132,12 +98,6 @@ export default async function DashboardPage() {
     await supabase?.auth.signOut();
     redirect("/login");
   }
-
-  console.log("[PaddleRank auth timing]", {
-    source: "dashboard-total",
-    result: "render-ready",
-    duration_ms: Date.now() - renderStartedAt,
-  });
 
   return (
     <main className="min-h-screen bg-court-mist text-slate-950">

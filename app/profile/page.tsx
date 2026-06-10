@@ -33,16 +33,10 @@ function getFormValue(formData: FormData, key: string) {
 }
 
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
-  const authStartedAt = Date.now();
   const params = await searchParams;
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    console.log("[PaddleRank auth timing]", {
-      source: "profile-page",
-      result: "supabase-not-configured",
-      duration_ms: Date.now() - authStartedAt,
-    });
     redirect("/early-access");
   }
 
@@ -51,30 +45,14 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    console.log("[PaddleRank auth timing]", {
-      source: "profile-page",
-      result: "signed-out",
-      duration_ms: Date.now() - authStartedAt,
-    });
     redirect("/login");
   }
 
   const access = await checkWaitlistAccess(supabase, user, "profile");
 
   if (!access.isApproved) {
-    console.log("[PaddleRank auth timing]", {
-      source: "profile-page",
-      result: "access-denied",
-      duration_ms: Date.now() - authStartedAt,
-    });
     redirect("/early-access");
   }
-
-  console.log("[PaddleRank auth timing]", {
-    source: "profile-page",
-    result: "access-approved",
-    duration_ms: Date.now() - authStartedAt,
-  });
 
   const fallbackName =
     user.user_metadata?.full_name ||

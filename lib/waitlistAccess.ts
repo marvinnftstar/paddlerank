@@ -25,7 +25,6 @@ function logWaitlistAccess(
   accessStatus: string | null,
   isApproved: boolean,
   source: string,
-  durationMs: number,
   errorMessage?: string,
 ) {
   console.log("[PaddleRank early access gate]", {
@@ -33,7 +32,6 @@ function logWaitlistAccess(
     email: maskEmail(email),
     access_status: accessStatus,
     result: isApproved ? "allow" : "deny",
-    duration_ms: durationMs,
     error: errorMessage || null,
   });
 }
@@ -43,7 +41,6 @@ export async function checkWaitlistAccess(
   user: User,
   source = "server",
 ): Promise<WaitlistAccessResult> {
-  const startedAt = Date.now();
   const email = user.email?.trim().toLowerCase();
 
   if (!email) {
@@ -52,7 +49,6 @@ export async function checkWaitlistAccess(
       email: null,
       access_status: null,
       result: "deny",
-      duration_ms: Date.now() - startedAt,
       error: "Authenticated user has no email.",
     });
     return { isApproved: false, accessStatus: null };
@@ -65,14 +61,7 @@ export async function checkWaitlistAccess(
     .returns<WaitlistSignupRow[]>();
 
   if (error) {
-    logWaitlistAccess(
-      email,
-      null,
-      false,
-      source,
-      Date.now() - startedAt,
-      error.message,
-    );
+    logWaitlistAccess(email, null, false, source, error.message);
     return { isApproved: false, accessStatus: null };
   }
 
@@ -87,13 +76,7 @@ export async function checkWaitlistAccess(
     matchingRows.length > 0 &&
     statuses.every((status) => status === "approved");
 
-  logWaitlistAccess(
-    email,
-    accessStatus,
-    isApproved,
-    source,
-    Date.now() - startedAt,
-  );
+  logWaitlistAccess(email, accessStatus, isApproved, source);
 
   return { isApproved, accessStatus };
 }
