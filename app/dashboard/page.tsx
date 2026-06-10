@@ -1,44 +1,22 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export const dynamic = "force-dynamic";
 
-const stats = [
-  {
-    label: "Total Matches",
-    value: "0",
-    helper: "Matches you have logged in PaddleRank.",
-  },
-  {
-    label: "Wins",
-    value: "0",
-    helper: "Winning results will appear here.",
-  },
-  {
-    label: "Losses",
-    value: "0",
-    helper: "Completed match losses will be tracked.",
-  },
-  {
-    label: "Win Rate",
-    value: "0%",
-    helper: "Calculated once match history exists.",
-  },
-  {
-    label: "Club",
-    value: "Not set",
-    helper: "Your home club or playing group.",
-  },
-  {
-    label: "Ranking",
-    value: "Unranked",
-    helper: "Rankings unlock after match tracking.",
-  },
-];
+type ProfileRow = {
+  pickleball_club: string | null;
+  profile_completed: boolean | null;
+};
 
-const navItems = ["Dashboard", "Profile", "Matches", "Clubs"];
+const navItems = [
+  { label: "Dashboard" },
+  { label: "Profile", href: "/profile" },
+  { label: "Matches" },
+  { label: "Clubs" },
+];
 
 const nextSteps = [
   "Complete player profile",
@@ -73,6 +51,45 @@ export default async function DashboardPage() {
     user.user_metadata?.name ||
     user.email ||
     "Player";
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("pickleball_club, profile_completed")
+    .eq("user_id", user.id)
+    .maybeSingle<ProfileRow>();
+
+  const stats = [
+    {
+      label: "Total Matches",
+      value: "0",
+      helper: "Matches you have logged in PaddleRank.",
+    },
+    {
+      label: "Wins",
+      value: "0",
+      helper: "Winning results will appear here.",
+    },
+    {
+      label: "Losses",
+      value: "0",
+      helper: "Completed match losses will be tracked.",
+    },
+    {
+      label: "Win Rate",
+      value: "0%",
+      helper: "Calculated once match history exists.",
+    },
+    {
+      label: "Club",
+      value: profile?.pickleball_club || "Not set",
+      helper: "Your home club or playing group.",
+    },
+    {
+      label: "Profile Status",
+      value: profile?.profile_completed ? "Complete" : "Incomplete",
+      helper: "Complete your profile to prepare for future rankings.",
+    },
+  ];
 
   async function logout() {
     "use server";
@@ -121,18 +138,28 @@ export default async function DashboardPage() {
               aria-label="Dashboard sections"
               className="flex gap-1 overflow-x-auto rounded-2xl border border-court-teal/15 bg-court-mist p-1"
             >
-              {navItems.map((item) => (
-                <span
-                  key={item}
-                  className={`whitespace-nowrap rounded-xl px-3 py-2 text-sm font-black ${
-                    item === "Dashboard"
-                      ? "bg-white text-court-navy shadow-sm"
-                      : "text-slate-500"
-                  }`}
-                >
-                  {item}
-                </span>
-              ))}
+              {navItems.map((item) =>
+                item.href ? (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="whitespace-nowrap rounded-xl px-3 py-2 text-sm font-black text-slate-500 transition hover:text-court-navy"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span
+                    key={item.label}
+                    className={`whitespace-nowrap rounded-xl px-3 py-2 text-sm font-black ${
+                      item.label === "Dashboard"
+                        ? "bg-white text-court-navy shadow-sm"
+                        : "text-slate-500"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                ),
+              )}
             </nav>
 
             <form action={logout} className="hidden lg:block">
@@ -182,13 +209,12 @@ export default async function DashboardPage() {
             </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                disabled
-                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-75"
+              <Link
+                href="/profile"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean"
               >
                 Set Up Profile
-              </button>
+              </Link>
               <button
                 type="button"
                 disabled

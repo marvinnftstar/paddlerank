@@ -84,8 +84,34 @@ status column. Apply it manually in Supabase only after reviewing it:
 supabase/add_waitlist_access_status.sql
 ```
 
-Only users with `access_status = 'approved'` can open `/dashboard`. New
-waitlist signups are `pending` by default.
+Only users with `access_status = 'approved'` can open `/dashboard` and
+`/profile`. New waitlist signups are `pending` by default.
+
+## Player Profile Setup
+
+PaddleRank uses a `profiles` table for basic player profile details.
+
+Run this SQL in the Supabase SQL Editor after the waitlist table is ready:
+
+```text
+supabase/create_profiles_table.sql
+```
+
+The profile table stores:
+
+* full name
+* display name
+* city
+* province
+* region
+* pickleball club
+* skill level
+* preferred play type
+* profile completion status
+
+Each signed-in user can only read and update their own profile. A profile is
+marked complete after full name, display name, city, province, skill level, and
+preferred play type are saved.
 
 ## Environment Variables
 
