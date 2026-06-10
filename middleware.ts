@@ -1,12 +1,12 @@
 import type { NextRequest } from "next/server";
-import { updateSupabaseSession } from "@/lib/supabase/middleware";
+import { NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  return updateSupabaseSession(request);
+export function middleware(request: NextRequest) {
+  return NextResponse.next({
+    request,
+  });
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/|favicon.ico|.*\\.(?:css|js|map|svg|png|jpg|jpeg|gif|webp|ico)$).*)",
-  ],
+  matcher: ["/dashboard/:path*", "/profile/:path*"],
 };

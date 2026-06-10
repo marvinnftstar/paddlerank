@@ -10,6 +10,16 @@ type WaitlistSignupRow = {
   access_status: string | null;
 };
 
+function maskEmail(email: string) {
+  const [localPart, domain] = email.split("@");
+
+  if (!domain) {
+    return "invalid-email";
+  }
+
+  return `${localPart.slice(0, 1)}***@${domain}`;
+}
+
 function logWaitlistAccess(
   email: string,
   accessStatus: string | null,
@@ -19,7 +29,7 @@ function logWaitlistAccess(
 ) {
   console.log("[PaddleRank early access gate]", {
     source,
-    email,
+    email: maskEmail(email),
     access_status: accessStatus,
     result: isApproved ? "allow" : "deny",
     error: errorMessage || null,
