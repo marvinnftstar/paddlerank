@@ -43,7 +43,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const sessionExchangeStartedAt = Date.now();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
+  console.log("[PaddleRank auth timing]", {
+    source: "auth-callback-session-exchange",
+    result: error ? "failed" : "completed",
+    duration_ms: Date.now() - sessionExchangeStartedAt,
+  });
 
   if (error) {
     return finish(
@@ -52,9 +58,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const getUserStartedAt = Date.now();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  console.log("[PaddleRank auth timing]", {
+    source: "auth-callback-get-user",
+    result: user ? "signed-in" : "signed-out",
+    duration_ms: Date.now() - getUserStartedAt,
+  });
 
   if (!user) {
     return finish(
