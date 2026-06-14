@@ -52,46 +52,62 @@ export default async function DashboardPage() {
     user.email ||
     "Player";
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("pickleball_club, profile_completed")
-    .eq("user_id", user.id)
-    .maybeSingle<ProfileRow>();
+  const [profileResult, winsResult, lossesResult] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("pickleball_club, profile_completed")
+      .eq("user_id", user.id)
+      .maybeSingle<ProfileRow>(),
+    supabase
+      .from("match_records")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("result", "win"),
+    supabase
+      .from("match_records")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("result", "loss"),
+  ]);
 
-  const { data: matchRecords } = await supabase
-    .from("match_records")
-    .select("result")
-    .eq("user_id", user.id)
-    .returns<{ result: "win" | "loss" }[]>();
-
-  const totalMatches = matchRecords?.length || 0;
-  const wins =
-    matchRecords?.filter((match) => match.result === "win").length || 0;
-  const losses =
-    matchRecords?.filter((match) => match.result === "loss").length || 0;
+  const profile = profileResult.data;
+  const statsAvailable = !winsResult.error && !lossesResult.error;
+  const wins = winsResult.count || 0;
+  const losses = lossesResult.count || 0;
+  const totalMatches = wins + losses;
   const winRate =
-    totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+    statsAvailable && totalMatches > 0
+      ? Math.round((wins / totalMatches) * 100)
+      : 0;
 
   const stats = [
     {
       label: "Total Matches",
-      value: String(totalMatches),
-      helper: "Matches you have logged in PaddleRank.",
+      value: statsAvailable ? String(totalMatches) : "Unavailable",
+      helper: statsAvailable
+        ? "Matches you have logged in PaddleRank."
+        : "Match stats could not be loaded right now.",
     },
     {
       label: "Wins",
-      value: String(wins),
-      helper: "Winning results will appear here.",
+      value: statsAvailable ? String(wins) : "Unavailable",
+      helper: statsAvailable
+        ? "Winning results will appear here."
+        : "Match stats could not be loaded right now.",
     },
     {
       label: "Losses",
-      value: String(losses),
-      helper: "Completed match losses will be tracked.",
+      value: statsAvailable ? String(losses) : "Unavailable",
+      helper: statsAvailable
+        ? "Completed match losses will be tracked."
+        : "Match stats could not be loaded right now.",
     },
     {
       label: "Win Rate",
-      value: `${winRate}%`,
-      helper: "Calculated once match history exists.",
+      value: statsAvailable ? `${winRate}%` : "Unavailable",
+      helper: statsAvailable
+        ? "Calculated once match history exists."
+        : "Match stats could not be loaded right now.",
     },
     {
       label: "Club",
