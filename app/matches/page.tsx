@@ -26,8 +26,26 @@ type MatchRecord = {
   created_at: string;
 };
 
+const MATCH_FIELD_LIMITS = {
+  opponentName: 100,
+  partnerName: 100,
+  score: 100,
+  notes: 1000,
+};
+
 function getFormValue(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
+}
+
+function isValidDateInput(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(`${value}T00:00:00Z`);
+
+  return !Number.isNaN(date.getTime()) &&
+    date.toISOString().slice(0, 10) === value;
 }
 
 function formatMatchDate(date: string) {
@@ -69,6 +87,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     .eq("user_id", user.id)
     .order("match_date", { ascending: false })
     .order("created_at", { ascending: false })
+    .limit(20)
     .returns<MatchRecord[]>();
 
   const matches = data || [];
@@ -107,13 +126,19 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     const hasValidMatchType =
       matchType === "singles" || matchType === "doubles";
     const hasValidResult = result === "win" || result === "loss";
+    const hasValidLengths =
+      opponentName.length <= MATCH_FIELD_LIMITS.opponentName &&
+      partnerName.length <= MATCH_FIELD_LIMITS.partnerName &&
+      score.length <= MATCH_FIELD_LIMITS.score &&
+      notes.length <= MATCH_FIELD_LIMITS.notes;
 
     if (
       !hasValidMatchType ||
       !hasValidResult ||
       !opponentName ||
       !score ||
-      !matchDate ||
+      !isValidDateInput(matchDate) ||
+      !hasValidLengths ||
       (matchType === "doubles" && !partnerName)
     ) {
       redirect("/matches?error=invalid-fields");
@@ -135,7 +160,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
       redirect("/matches?error=save-failed");
     }
 
-    redirect("/matches?saved=1");
+    redirect(`/matches?saved=${Date.now()}`);
   }
 
   async function logout() {
@@ -232,21 +257,28 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 PaddleRank account.
               </p>
 
-              {params.saved === "1" ? (
-                <p className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy">
-                  Match saved.
+              {params.saved ? (
+                <p
+                  role="status"
+                  className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy"
+                >
+                  Match saved successfully. The form is ready for another
+                  match.
                 </p>
               ) : null}
 
               {params.error ? (
-                <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                <p
+                  role="alert"
+                  className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+                >
                   {params.error === "invalid-fields"
-                    ? "Please complete all required match fields."
-                    : "Match could not be saved. Please check the match_records table setup."}
+                    ? "Please review the required fields and value lengths, then try again."
+                    : "We could not save this match. Please try again in a moment."}
                 </p>
               ) : null}
 
-              <MatchForm action={saveMatch} />
+              <MatchForm key={params.saved || "new"} action={saveMatch} />
             </section>
 
             <section className="rounded-3xl border border-court-teal/15 bg-white p-5 shadow-sm sm:p-6">
@@ -257,9 +289,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 <h2 className="mt-2 text-2xl font-black text-court-navy">
                   {matches.length === 0
                     ? "No matches logged yet."
-                    : `${matches.length} ${
+                    : `Latest ${matches.length} ${
                         matches.length === 1 ? "match" : "matches"
-                      } logged.`}
+                      }.`}
                 </h2>
               </div>
 
@@ -281,7 +313,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                       className="rounded-2xl border border-court-teal/15 bg-court-mist p-4 sm:p-5"
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
+                        <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span
                               className={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ${
@@ -296,18 +328,19 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                               {match.match_type}
                             </span>
                           </div>
-                          <h3 className="mt-3 text-lg font-black text-court-navy">
+                          <h3 className="mt-3 break-words text-lg font-black text-court-navy">
                             vs. {match.opponent_name}
                           </h3>
-                          {match.partner_name ? (
-                            <p className="mt-1 text-sm font-semibold text-slate-600">
+                          {match.match_type === "doubles" &&
+                          match.partner_name ? (
+                            <p className="mt-1 break-words text-sm font-semibold text-slate-600">
                               Partner: {match.partner_name}
                             </p>
                           ) : null}
                         </div>
 
-                        <div className="sm:text-right">
-                          <p className="text-2xl font-black text-court-navy">
+                        <div className="min-w-0 sm:max-w-[45%] sm:text-right">
+                          <p className="break-words text-2xl font-black text-court-navy">
                             {match.score}
                           </p>
                           <p className="mt-1 text-sm font-semibold text-slate-500">
@@ -317,7 +350,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                       </div>
 
                       {match.notes ? (
-                        <p className="mt-4 border-t border-court-teal/15 pt-4 text-sm leading-6 text-slate-600">
+                        <p className="mt-4 whitespace-pre-wrap break-words border-t border-court-teal/15 pt-4 text-sm leading-6 text-slate-600">
                           {match.notes}
                         </p>
                       ) : null}
