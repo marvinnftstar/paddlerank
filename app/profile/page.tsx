@@ -192,9 +192,12 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               <span className="whitespace-nowrap rounded-xl bg-white px-3 py-2 text-sm font-black text-court-navy shadow-sm">
                 Profile
               </span>
-              <span className="whitespace-nowrap rounded-xl px-3 py-2 text-sm font-black text-slate-500">
+              <Link
+                href="/matches"
+                className="whitespace-nowrap rounded-xl px-3 py-2 text-sm font-black text-slate-500 transition hover:text-court-navy"
+              >
                 Matches
-              </span>
+              </Link>
               <span className="whitespace-nowrap rounded-xl px-3 py-2 text-sm font-black text-slate-500">
                 Clubs
               </span>
