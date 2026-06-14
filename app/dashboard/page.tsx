@@ -14,7 +14,7 @@ type ProfileRow = {
 const navItems = [
   { label: "Dashboard" },
   { label: "Profile", href: "/profile" },
-  { label: "Matches" },
+  { label: "Matches", href: "/matches" },
   { label: "Clubs" },
 ];
 
@@ -58,25 +58,39 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .maybeSingle<ProfileRow>();
 
+  const { data: matchRecords } = await supabase
+    .from("match_records")
+    .select("result")
+    .eq("user_id", user.id)
+    .returns<{ result: "win" | "loss" }[]>();
+
+  const totalMatches = matchRecords?.length || 0;
+  const wins =
+    matchRecords?.filter((match) => match.result === "win").length || 0;
+  const losses =
+    matchRecords?.filter((match) => match.result === "loss").length || 0;
+  const winRate =
+    totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
   const stats = [
     {
       label: "Total Matches",
-      value: "0",
+      value: String(totalMatches),
       helper: "Matches you have logged in PaddleRank.",
     },
     {
       label: "Wins",
-      value: "0",
+      value: String(wins),
       helper: "Winning results will appear here.",
     },
     {
       label: "Losses",
-      value: "0",
+      value: String(losses),
       helper: "Completed match losses will be tracked.",
     },
     {
       label: "Win Rate",
-      value: "0%",
+      value: `${winRate}%`,
       helper: "Calculated once match history exists.",
     },
     {
@@ -215,13 +229,12 @@ export default async function DashboardPage() {
               >
                 Set Up Profile
               </Link>
-              <button
-                type="button"
-                disabled
-                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-6 py-3 text-sm font-black text-court-navy shadow-sm transition disabled:cursor-not-allowed disabled:opacity-75"
+              <Link
+                href="/matches"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-6 py-3 text-sm font-black text-court-navy shadow-sm transition hover:border-court-mint hover:text-court-ocean"
               >
                 Add Match
-              </button>
+              </Link>
             </div>
           </div>
 

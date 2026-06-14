@@ -85,7 +85,7 @@ supabase/add_waitlist_access_status.sql
 ```
 
 Only users with `access_status = 'approved'` can open `/dashboard` and
-`/profile`. New waitlist signups are `pending` by default.
+`/profile` or `/matches`. New waitlist signups are `pending` by default.
 
 ## Player Profile Setup
 
@@ -112,6 +112,20 @@ The profile table stores:
 Each signed-in user can only read and update their own profile. A profile is
 marked complete after full name, display name, city, province, skill level, and
 preferred play type are saved.
+
+## Match Tracking Setup
+
+PaddleRank stores each player's private match history in `match_records`.
+
+Run this SQL in the Supabase SQL Editor:
+
+```text
+supabase/create_match_records_table.sql
+```
+
+The match tracking MVP supports singles and doubles, manual opponent and
+partner names, score, result, match date, and optional notes. Row Level
+Security limits each player to their own match records.
 
 ## Environment Variables
 
