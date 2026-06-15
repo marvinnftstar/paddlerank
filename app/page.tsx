@@ -48,10 +48,6 @@ export default function Home() {
               PaddleRank for pickleball communities. Early clubs can onboard
               up to 15 members for free during validation.
             </p>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600">
-              This is an interest check only. Club dashboards, calendars,
-              payments, and member limits are not part of this MVP.
-            </p>
           </div>
 
           <ClubInterestForm />
