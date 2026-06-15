@@ -20,13 +20,12 @@ const clubHighlights = [
     body: "Prepare your community for future verified rankings.",
   },
   {
-    title: "Events Coming Later",
-    body: "Club calendars and events are planned for a future phase.",
+    title: "Future Club Events",
+    body: "Club calendars and event tools are planned for a future phase.",
   },
 ];
 
-const clubInterestLink =
-  "mailto:hello@paddlerank.xyz?subject=Club%20Interest%20-%20PaddleRank";
+const clubInterestLink = "/#club-interest";
 
 export default async function ClubsPage() {
   const supabase = await createSupabaseServerClient();
@@ -149,12 +148,12 @@ export default async function ClubsPage() {
                   the best features for pickleball communities.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <a
+                  <Link
                     href={clubInterestLink}
                     className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean sm:w-auto"
                   >
                     Register Club Interest
-                  </a>
+                  </Link>
                   <p className="rounded-2xl border border-court-teal/20 bg-court-mist px-4 py-3 text-sm font-semibold text-court-navy">
                     Early clubs can onboard up to 15 members for free during
                     validation.
@@ -196,16 +195,16 @@ export default async function ClubsPage() {
 
           <section className="mt-6 rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm sm:p-6">
             <p className="text-sm font-black uppercase tracking-[0.18em] text-court-ocean">
-              MVP boundary
+              Club access
             </p>
             <h2 className="mt-2 text-2xl font-black text-court-navy">
-              Club tools are being validated first.
+              Start with early club interest.
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-              This page is for early interest only. Full club management,
-              payments, events, calendars, ranking systems, and member limits
-              will be considered in future phases after PaddleRank learns from
-              early clubs.
+              PaddleRank is currently inviting early clubs to share their
+              interest and help shape the first version of club tools. Full
+              club management, events, calendars, payments, rankings, and
+              member limits will be added only after validation.
             </p>
           </section>
         </div>
