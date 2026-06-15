@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MatchHistoryItem } from "@/components/matches/MatchHistoryItem";
 import { MatchForm } from "@/components/matches/MatchForm";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
@@ -10,6 +11,8 @@ export const dynamic = "force-dynamic";
 type MatchesPageProps = {
   searchParams: Promise<{
     saved?: string;
+    updated?: string;
+    deleted?: string;
     error?: string;
   }>;
 };
@@ -37,6 +40,12 @@ function getFormValue(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
 }
 
+function isValidUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
+
 function isValidDateInput(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return false;
@@ -46,6 +55,47 @@ function isValidDateInput(value: string) {
 
   return !Number.isNaN(date.getTime()) &&
     date.toISOString().slice(0, 10) === value;
+}
+
+function parseMatchForm(formData: FormData) {
+  const matchType = getFormValue(formData, "match_type");
+  const opponentName = getFormValue(formData, "opponent_name");
+  const partnerName = getFormValue(formData, "partner_name");
+  const score = getFormValue(formData, "score");
+  const result = getFormValue(formData, "result");
+  const matchDate = getFormValue(formData, "match_date");
+  const notes = getFormValue(formData, "notes");
+
+  const hasValidMatchType =
+    matchType === "singles" || matchType === "doubles";
+  const hasValidResult = result === "win" || result === "loss";
+  const hasValidLengths =
+    opponentName.length <= MATCH_FIELD_LIMITS.opponentName &&
+    partnerName.length <= MATCH_FIELD_LIMITS.partnerName &&
+    score.length <= MATCH_FIELD_LIMITS.score &&
+    notes.length <= MATCH_FIELD_LIMITS.notes;
+
+  if (
+    !hasValidMatchType ||
+    !hasValidResult ||
+    !opponentName ||
+    !score ||
+    !isValidDateInput(matchDate) ||
+    !hasValidLengths ||
+    (matchType === "doubles" && !partnerName)
+  ) {
+    return null;
+  }
+
+  return {
+    match_type: matchType,
+    opponent_name: opponentName,
+    partner_name: matchType === "doubles" ? partnerName : null,
+    score,
+    result,
+    match_date: matchDate,
+    notes: notes || null,
+  };
 }
 
 function formatMatchDate(date: string) {
@@ -115,44 +165,15 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
       redirect("/early-access");
     }
 
-    const matchType = getFormValue(formData, "match_type");
-    const opponentName = getFormValue(formData, "opponent_name");
-    const partnerName = getFormValue(formData, "partner_name");
-    const score = getFormValue(formData, "score");
-    const result = getFormValue(formData, "result");
-    const matchDate = getFormValue(formData, "match_date");
-    const notes = getFormValue(formData, "notes");
+    const matchValues = parseMatchForm(formData);
 
-    const hasValidMatchType =
-      matchType === "singles" || matchType === "doubles";
-    const hasValidResult = result === "win" || result === "loss";
-    const hasValidLengths =
-      opponentName.length <= MATCH_FIELD_LIMITS.opponentName &&
-      partnerName.length <= MATCH_FIELD_LIMITS.partnerName &&
-      score.length <= MATCH_FIELD_LIMITS.score &&
-      notes.length <= MATCH_FIELD_LIMITS.notes;
-
-    if (
-      !hasValidMatchType ||
-      !hasValidResult ||
-      !opponentName ||
-      !score ||
-      !isValidDateInput(matchDate) ||
-      !hasValidLengths ||
-      (matchType === "doubles" && !partnerName)
-    ) {
+    if (!matchValues) {
       redirect("/matches?error=invalid-fields");
     }
 
     const { error } = await supabase.from("match_records").insert({
       user_id: user.id,
-      match_type: matchType,
-      opponent_name: opponentName,
-      partner_name: matchType === "doubles" ? partnerName : null,
-      score,
-      result,
-      match_date: matchDate,
-      notes: notes || null,
+      ...matchValues,
     });
 
     if (error) {
@@ -161,6 +182,97 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     }
 
     redirect(`/matches?saved=${Date.now()}`);
+  }
+
+  async function updateMatch(formData: FormData) {
+    "use server";
+
+    const supabase = await createSupabaseServerClient();
+
+    if (!supabase) {
+      redirect("/login");
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      redirect("/login");
+    }
+
+    const access = await checkWaitlistAccess(supabase, user, "match-update");
+
+    if (!access.isApproved) {
+      redirect("/early-access");
+    }
+
+    const matchId = getFormValue(formData, "match_id");
+    const matchValues = parseMatchForm(formData);
+
+    if (!isValidUuid(matchId) || !matchValues) {
+      redirect("/matches?error=invalid-edit");
+    }
+
+    const { data, error } = await supabase
+      .from("match_records")
+      .update(matchValues)
+      .eq("id", matchId)
+      .eq("user_id", user.id)
+      .select("id")
+      .maybeSingle();
+
+    if (error || !data) {
+      console.error("PaddleRank match update error:", error);
+      redirect("/matches?error=update-failed");
+    }
+
+    redirect(`/matches?updated=${Date.now()}`);
+  }
+
+  async function deleteMatch(formData: FormData) {
+    "use server";
+
+    const supabase = await createSupabaseServerClient();
+
+    if (!supabase) {
+      redirect("/login");
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      redirect("/login");
+    }
+
+    const access = await checkWaitlistAccess(supabase, user, "match-delete");
+
+    if (!access.isApproved) {
+      redirect("/early-access");
+    }
+
+    const matchId = getFormValue(formData, "match_id");
+
+    if (!isValidUuid(matchId)) {
+      redirect("/matches?error=invalid-delete");
+    }
+
+    const { data, error } = await supabase
+      .from("match_records")
+      .delete()
+      .eq("id", matchId)
+      .eq("user_id", user.id)
+      .select("id")
+      .maybeSingle();
+
+    if (error || !data) {
+      console.error("PaddleRank match delete error:", error);
+      redirect("/matches?error=delete-failed");
+    }
+
+    redirect(`/matches?deleted=${Date.now()}`);
   }
 
   async function logout() {
@@ -267,6 +379,24 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 </p>
               ) : null}
 
+              {params.updated ? (
+                <p
+                  role="status"
+                  className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy"
+                >
+                  Match updated successfully.
+                </p>
+              ) : null}
+
+              {params.deleted ? (
+                <p
+                  role="status"
+                  className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy"
+                >
+                  Match deleted successfully.
+                </p>
+              ) : null}
+
               {params.error ? (
                 <p
                   role="alert"
@@ -274,7 +404,15 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 >
                   {params.error === "invalid-fields"
                     ? "Please review the required fields and value lengths, then try again."
-                    : "We could not save this match. Please try again in a moment."}
+                    : params.error === "invalid-edit"
+                      ? "Please review the match changes and try again."
+                      : params.error === "invalid-delete"
+                        ? "That match could not be deleted."
+                        : params.error === "update-failed"
+                          ? "We could not update this match. Please try again."
+                          : params.error === "delete-failed"
+                            ? "We could not delete this match. Please try again."
+                            : "We could not save this match. Please try again in a moment."}
                 </p>
               ) : null}
 
@@ -308,53 +446,13 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               ) : (
                 <div className="mt-6 grid gap-4">
                   {matches.map((match) => (
-                    <article
+                    <MatchHistoryItem
                       key={match.id}
-                      className="rounded-2xl border border-court-teal/15 bg-court-mist p-4 sm:p-5"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span
-                              className={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ${
-                                match.result === "win"
-                                  ? "bg-court-green/25 text-court-navy"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {match.result}
-                            </span>
-                            <span className="rounded-full bg-white px-3 py-1 text-xs font-black uppercase tracking-wide text-court-ocean">
-                              {match.match_type}
-                            </span>
-                          </div>
-                          <h3 className="mt-3 break-words text-lg font-black text-court-navy">
-                            vs. {match.opponent_name}
-                          </h3>
-                          {match.match_type === "doubles" &&
-                          match.partner_name ? (
-                            <p className="mt-1 break-words text-sm font-semibold text-slate-600">
-                              Partner: {match.partner_name}
-                            </p>
-                          ) : null}
-                        </div>
-
-                        <div className="min-w-0 sm:max-w-[45%] sm:text-right">
-                          <p className="break-words text-2xl font-black text-court-navy">
-                            {match.score}
-                          </p>
-                          <p className="mt-1 text-sm font-semibold text-slate-500">
-                            {formatMatchDate(match.match_date)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {match.notes ? (
-                        <p className="mt-4 whitespace-pre-wrap break-words border-t border-court-teal/15 pt-4 text-sm leading-6 text-slate-600">
-                          {match.notes}
-                        </p>
-                      ) : null}
-                    </article>
+                      match={match}
+                      formattedDate={formatMatchDate(match.match_date)}
+                      updateAction={updateMatch}
+                      deleteAction={deleteMatch}
+                    />
                   ))}
                 </div>
               )}
