@@ -90,7 +90,7 @@ export function MatchForm({ action }: MatchFormProps) {
     <form
       action={action}
       onSubmit={validateForm}
-      className="mt-6 grid gap-4 sm:grid-cols-2"
+      className="mt-5 grid gap-5 sm:mt-6 sm:grid-cols-2"
     >
       <label>
         <span className="text-sm font-semibold text-court-navy">
