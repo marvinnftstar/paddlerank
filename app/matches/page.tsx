@@ -362,11 +362,11 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 Match tracking
               </p>
               <h1 className="mt-3 text-3xl font-black leading-tight text-court-navy">
-                Log a completed match.
+                Log a match result.
               </h1>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Add the match details below. Your record is private to your
-                PaddleRank account.
+                Add the final score and match details. Your record stays
+                private to your PaddleRank account.
               </p>
 
               {params.saved ? (
@@ -374,8 +374,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   role="status"
                   className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy"
                 >
-                  Match saved successfully. The form is ready for another
-                  match.
+                  Match saved. Your stats and history are up to date.
                 </p>
               ) : null}
 
@@ -384,7 +383,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   role="status"
                   className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy"
                 >
-                  Match updated successfully.
+                  Match updated. Your stats are up to date.
                 </p>
               ) : null}
 
@@ -393,7 +392,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   role="status"
                   className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy"
                 >
-                  Match deleted successfully.
+                  Match deleted. Your stats are up to date.
                 </p>
               ) : null}
 
@@ -440,7 +439,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               ) : matches.length === 0 ? (
                 <div className="mt-6 rounded-2xl border border-dashed border-court-teal/30 bg-court-mist px-5 py-8 text-center">
                   <p className="text-sm leading-6 text-slate-600">
-                    Save your first match to start building your history.
+                    Log your first match to start your private match history.
                   </p>
                 </div>
               ) : (

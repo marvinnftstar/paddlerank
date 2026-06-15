@@ -19,10 +19,9 @@ const navItems = [
 ];
 
 const nextSteps = [
-  "Complete player profile",
-  "Join or create a club",
-  "Log your first match",
-  "Unlock rankings soon",
+  "Complete your player profile",
+  "Log your latest match",
+  "Review your match stats",
 ];
 
 export default async function DashboardPage() {
@@ -85,28 +84,28 @@ export default async function DashboardPage() {
       label: "Total Matches",
       value: statsAvailable ? String(totalMatches) : "Unavailable",
       helper: statsAvailable
-        ? "Matches you have logged in PaddleRank."
+        ? "Every result you have logged."
         : "Match stats could not be loaded right now.",
     },
     {
       label: "Wins",
       value: statsAvailable ? String(wins) : "Unavailable",
       helper: statsAvailable
-        ? "Winning results will appear here."
+        ? "Matches marked as wins."
         : "Match stats could not be loaded right now.",
     },
     {
       label: "Losses",
       value: statsAvailable ? String(losses) : "Unavailable",
       helper: statsAvailable
-        ? "Completed match losses will be tracked."
+        ? "Matches marked as losses."
         : "Match stats could not be loaded right now.",
     },
     {
       label: "Win Rate",
       value: statsAvailable ? `${winRate}%` : "Unavailable",
       helper: statsAvailable
-        ? "Calculated once match history exists."
+        ? "Your win percentage across logged matches."
         : "Match stats could not be loaded right now.",
     },
     {
@@ -117,7 +116,7 @@ export default async function DashboardPage() {
     {
       label: "Profile Status",
       value: profile?.profile_completed ? "Complete" : "Incomplete",
-      helper: "Complete your profile to prepare for future rankings.",
+      helper: "Keep your player details current.",
     },
   ];
 
@@ -216,8 +215,8 @@ export default async function DashboardPage() {
                   Welcome, {displayName}.
                 </h1>
                 <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-                  Your PaddleRank player dashboard is ready. Start tracking
-                  your matches soon.
+                  Keep your profile, match record, and key stats together in
+                  one simple player hub.
                 </p>
                 {user.email ? (
                   <p className="mt-4 inline-flex max-w-full rounded-2xl border border-court-teal/20 bg-court-mist px-4 py-3 text-sm font-semibold text-court-navy">
@@ -228,12 +227,14 @@ export default async function DashboardPage() {
 
               <div className="rounded-2xl bg-[linear-gradient(135deg,#155A8A_0%,#0D82A7_55%,#10BFA0_100%)] p-5 text-white">
                 <p className="text-sm font-bold text-white/75">
-                  MVP status
+                  Player hub
                 </p>
-                <p className="mt-2 text-2xl font-black">Ready for setup</p>
+                <p className="mt-2 text-2xl font-black">
+                  Ready for your next match
+                </p>
                 <p className="mt-2 text-sm leading-6 text-white/80">
-                  Profiles, matches, clubs, and rankings are prepared as next
-                  steps.
+                  Update your profile, log results, and check your progress
+                  anytime.
                 </p>
               </div>
             </div>
@@ -243,13 +244,13 @@ export default async function DashboardPage() {
                 href="/profile"
                 className="inline-flex min-h-12 items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean"
               >
-                Set Up Profile
+                Update profile
               </Link>
               <Link
                 href="/matches"
                 className="inline-flex min-h-12 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-6 py-3 text-sm font-black text-court-navy shadow-sm transition hover:border-court-mint hover:text-court-ocean"
               >
-                Add Match
+                Log a match
               </Link>
             </div>
           </div>
@@ -278,28 +279,27 @@ export default async function DashboardPage() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-black uppercase tracking-[0.18em] text-court-ocean">
-                    Recent Match Activity
+                    Match activity
                   </p>
                   <h2 className="mt-2 text-2xl font-black text-court-navy">
-                    No matches logged yet.
+                    Your match log is ready.
                   </h2>
                 </div>
                 <span className="inline-flex w-fit rounded-full border border-court-green/40 bg-court-green/15 px-3 py-1 text-xs font-black uppercase tracking-wide text-court-navy">
-                  Coming soon
+                  Live
                 </span>
               </div>
 
               <div className="mt-6 rounded-2xl border border-dashed border-court-teal/30 bg-court-mist px-5 py-8 text-center">
                 <p className="mx-auto max-w-md text-sm leading-6 text-slate-600">
-                  Your match history will appear here once you start tracking
-                  games.
+                  Open Matches to add a result or review your latest games.
                 </p>
               </div>
             </section>
 
             <section className="rounded-2xl border border-court-teal/15 bg-white p-5 shadow-sm sm:p-6">
               <p className="text-sm font-black uppercase tracking-[0.18em] text-court-ocean">
-                Next Steps
+                Next steps
               </p>
               <div className="mt-5 grid gap-3">
                 {nextSteps.map((step, index) => (
