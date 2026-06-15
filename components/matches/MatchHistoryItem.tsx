@@ -47,7 +47,7 @@ function SaveEditButton() {
       type="submit"
       disabled={pending}
       aria-disabled={pending}
-      className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-court-mint px-5 py-2 text-sm font-black text-white transition hover:bg-court-ocean disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
+      className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-5 py-2 text-sm font-black text-white transition hover:bg-court-ocean disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:w-auto"
     >
       {pending ? "Saving..." : "Save changes"}
     </button>
@@ -62,7 +62,7 @@ function DeleteButton() {
       type="submit"
       disabled={pending}
       aria-disabled={pending}
-      className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-black text-red-700 transition hover:border-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
+      className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-black text-red-700 transition hover:border-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-10 sm:w-auto"
     >
       {pending ? "Deleting..." : "Delete match"}
     </button>
@@ -144,7 +144,7 @@ export function MatchHistoryItem({
   }
 
   return (
-    <article className="rounded-2xl border border-court-teal/15 bg-court-mist p-4 sm:p-5">
+    <article className="rounded-2xl border border-court-teal/15 bg-court-mist p-3.5 sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -187,11 +187,11 @@ export function MatchHistoryItem({
         </p>
       ) : null}
 
-      <div className="mt-4 flex flex-col gap-2 border-t border-court-teal/15 pt-4 sm:flex-row">
+      <div className="mt-4 grid grid-cols-2 gap-2 border-t border-court-teal/15 pt-4 sm:flex sm:flex-row">
         <button
           type="button"
           onClick={() => setIsEditing((current) => !current)}
-          className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-4 py-2 text-sm font-black text-court-navy transition hover:border-court-mint hover:text-court-ocean sm:flex-none"
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-court-teal/25 bg-white px-4 py-2 text-sm font-black text-court-navy transition hover:border-court-mint hover:text-court-ocean sm:min-h-10 sm:w-auto"
         >
           {isEditing ? "Close editor" : "Edit match"}
         </button>
@@ -199,7 +199,7 @@ export function MatchHistoryItem({
         <form
           action={deleteAction}
           onSubmit={confirmDelete}
-          className="flex flex-1 sm:flex-none"
+          className="flex min-w-0 sm:flex-none"
         >
           <input type="hidden" name="match_id" value={match.id} />
           <DeleteButton />
@@ -210,7 +210,7 @@ export function MatchHistoryItem({
         <form
           action={updateAction}
           onSubmit={validateEdit}
-          className="mt-4 grid gap-4 rounded-2xl border border-court-teal/15 bg-white p-4 sm:grid-cols-2"
+          className="mt-4 grid gap-5 rounded-2xl border border-court-teal/15 bg-white p-3 sm:grid-cols-2 sm:gap-4 sm:p-4"
         >
           <input type="hidden" name="match_id" value={match.id} />
 
@@ -368,7 +368,7 @@ export function MatchHistoryItem({
             <button
               type="button"
               onClick={cancelEdit}
-              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-5 py-2 text-sm font-black text-court-navy transition hover:border-court-mint hover:text-court-ocean sm:flex-none"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-court-teal/25 bg-white px-5 py-2 text-sm font-black text-court-navy transition hover:border-court-mint hover:text-court-ocean sm:min-h-11 sm:w-auto"
             >
               Cancel
             </button>

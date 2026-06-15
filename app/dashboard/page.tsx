@@ -131,7 +131,7 @@ export default async function DashboardPage() {
   return (
     <main className="min-h-screen bg-court-mist text-slate-950">
       <header className="sticky top-0 z-10 border-b border-court-teal/15 bg-white/95 px-4 py-3 shadow-sm backdrop-blur sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Image
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
             <form action={logout} className="lg:hidden">
               <button
                 type="submit"
-                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-4 py-2 text-sm font-black text-court-navy transition hover:border-court-mint hover:text-court-ocean"
+                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-4 py-2 text-sm font-black text-court-navy transition hover:border-court-mint hover:text-court-ocean"
               >
                 Logout
               </button>
@@ -165,21 +165,21 @@ export default async function DashboardPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:flex-1 lg:justify-end">
             <nav
               aria-label="Dashboard sections"
-              className="flex gap-1 overflow-x-auto rounded-2xl border border-court-teal/15 bg-court-mist p-1"
+              className="flex w-full gap-1 overflow-x-auto rounded-2xl border border-court-teal/15 bg-court-mist p-1 lg:w-auto"
             >
               {navItems.map((item) =>
                 item.href ? (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="whitespace-nowrap rounded-xl px-3 py-2 text-sm font-black text-slate-500 transition hover:text-court-navy"
+                    className="flex-1 whitespace-nowrap rounded-xl px-3 py-2 text-center text-sm font-black text-slate-500 transition hover:text-court-navy lg:flex-none"
                   >
                     {item.label}
                   </Link>
                 ) : (
                   <span
                     key={item.label}
-                    className={`whitespace-nowrap rounded-xl px-3 py-2 text-sm font-black ${
+                    className={`flex-1 whitespace-nowrap rounded-xl px-3 py-2 text-center text-sm font-black lg:flex-none ${
                       item.label === "Dashboard"
                         ? "bg-white text-court-navy shadow-sm"
                         : "text-slate-500"
@@ -203,15 +203,15 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <section className="px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <section className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="mx-auto max-w-6xl">
-          <div className="rounded-3xl border border-court-teal/15 bg-white p-5 shadow-glow sm:p-7 lg:p-8">
-            <div className="grid gap-7 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
+          <div className="rounded-3xl border border-court-teal/15 bg-white p-4 shadow-glow sm:p-7 lg:p-8">
+            <div className="grid gap-5 sm:gap-7 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.2em] text-court-ocean">
                   Player dashboard
                 </p>
-                <h1 className="mt-3 text-3xl font-black leading-tight text-court-navy sm:text-4xl">
+                <h1 className="mt-3 text-2xl font-black leading-tight text-court-navy sm:text-4xl">
                   Welcome, {displayName}.
                 </h1>
                 <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
@@ -225,7 +225,7 @@ export default async function DashboardPage() {
                 ) : null}
               </div>
 
-              <div className="rounded-2xl bg-[linear-gradient(135deg,#155A8A_0%,#0D82A7_55%,#10BFA0_100%)] p-5 text-white">
+              <div className="rounded-2xl bg-[linear-gradient(135deg,#155A8A_0%,#0D82A7_55%,#10BFA0_100%)] p-4 text-white sm:p-5">
                 <p className="text-sm font-bold text-white/75">
                   Player hub
                 </p>
@@ -242,13 +242,13 @@ export default async function DashboardPage() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/profile"
-                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean sm:w-auto"
               >
                 Update profile
               </Link>
               <Link
                 href="/matches"
-                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-6 py-3 text-sm font-black text-court-navy shadow-sm transition hover:border-court-mint hover:text-court-ocean"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-court-teal/25 bg-white px-6 py-3 text-sm font-black text-court-navy shadow-sm transition hover:border-court-mint hover:text-court-ocean sm:w-auto"
               >
                 Log a match
               </Link>
@@ -259,7 +259,7 @@ export default async function DashboardPage() {
             {stats.map((stat) => (
               <article
                 key={stat.label}
-                className="rounded-2xl border border-court-teal/15 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-court-mint/50 hover:shadow-glow"
+                className="rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-court-mint/50 hover:shadow-glow sm:p-5"
               >
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-court-ocean">
                   {stat.label}
@@ -275,7 +275,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-            <section className="rounded-2xl border border-court-teal/15 bg-white p-5 shadow-sm sm:p-6">
+            <section className="rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm sm:p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-black uppercase tracking-[0.18em] text-court-ocean">
@@ -290,14 +290,14 @@ export default async function DashboardPage() {
                 </span>
               </div>
 
-              <div className="mt-6 rounded-2xl border border-dashed border-court-teal/30 bg-court-mist px-5 py-8 text-center">
+              <div className="mt-5 rounded-2xl border border-dashed border-court-teal/30 bg-court-mist px-4 py-6 text-center sm:mt-6 sm:px-5 sm:py-8">
                 <p className="mx-auto max-w-md text-sm leading-6 text-slate-600">
                   Open Matches to add a result or review your latest games.
                 </p>
               </div>
             </section>
 
-            <section className="rounded-2xl border border-court-teal/15 bg-white p-5 shadow-sm sm:p-6">
+            <section className="rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm sm:p-6">
               <p className="text-sm font-black uppercase tracking-[0.18em] text-court-ocean">
                 Next steps
               </p>
