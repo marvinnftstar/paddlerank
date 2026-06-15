@@ -29,7 +29,7 @@ function SubmitButton() {
       aria-disabled={pending}
       className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white transition hover:bg-court-ocean disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
     >
-      {pending ? "Saving..." : "Save Match"}
+      {pending ? "Saving..." : "Log match"}
     </button>
   );
 }

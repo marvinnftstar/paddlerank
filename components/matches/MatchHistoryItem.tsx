@@ -49,7 +49,7 @@ function SaveEditButton() {
       aria-disabled={pending}
       className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-court-mint px-5 py-2 text-sm font-black text-white transition hover:bg-court-ocean disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
     >
-      {pending ? "Saving..." : "Save Changes"}
+      {pending ? "Saving..." : "Save changes"}
     </button>
   );
 }
@@ -64,7 +64,7 @@ function DeleteButton() {
       aria-disabled={pending}
       className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-black text-red-700 transition hover:border-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
     >
-      {pending ? "Deleting..." : "Delete"}
+      {pending ? "Deleting..." : "Delete match"}
     </button>
   );
 }
@@ -193,7 +193,7 @@ export function MatchHistoryItem({
           onClick={() => setIsEditing((current) => !current)}
           className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl border border-court-teal/25 bg-white px-4 py-2 text-sm font-black text-court-navy transition hover:border-court-mint hover:text-court-ocean sm:flex-none"
         >
-          {isEditing ? "Close Edit" : "Edit"}
+          {isEditing ? "Close editor" : "Edit match"}
         </button>
 
         <form

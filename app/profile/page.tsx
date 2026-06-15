@@ -222,11 +222,11 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               Player profile
             </p>
             <h1 className="mt-3 text-3xl font-black leading-tight text-court-navy">
-              Set up your PaddleRank identity.
+              Build your player profile.
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              This is the basic player information that will support future
-              match history, rankings, clubs, and tournaments.
+              Add the details that help PaddleRank feel like your home court.
+              You can update them anytime.
             </p>
             {user.email ? (
               <p className="mt-5 rounded-2xl border border-court-teal/20 bg-court-mist px-4 py-3 text-sm font-semibold text-court-navy">
@@ -242,8 +242,12 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   Profile details
                 </p>
                 <h2 className="mt-2 text-2xl font-black text-court-navy">
-                  Keep it simple for now.
+                  Tell us how you play.
                 </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Complete the essentials so your player hub is ready for every
+                  match.
+                </p>
               </div>
               {params.saved === "1" ? (
                 <p className="rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy">
@@ -384,7 +388,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   type="submit"
                   className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white transition hover:bg-court-ocean sm:w-auto"
                 >
-                  Save Profile
+                  Save profile
                 </button>
               </div>
             </form>
