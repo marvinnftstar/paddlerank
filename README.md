@@ -14,7 +14,8 @@ PaddleRank is a one-page waitlist landing page for an upcoming pickleball match 
 
 ## Current Version
 
-Version 1 focuses only on waitlist signups.
+The current MVP focuses on player early access and lightweight club interest
+validation.
 
 The page includes:
 
@@ -22,8 +23,13 @@ The page includes:
 * App name and tagline
 * Short waitlist description
 * Supabase-powered waitlist form
+* Login link for approved players
+* Club interest form that opens a prefilled email draft
 * Small feature highlights
 * Footer
+
+Club interest is validation only. It does not create club accounts, store club
+data, or include club dashboards, calendars, payments, or member-limit logic.
 
 ## Logo
 
