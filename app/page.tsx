@@ -35,7 +35,10 @@ export default function Home() {
         id="clubs"
         className="scroll-mt-6 bg-white/55"
       >
-        <div className="mx-auto grid w-full max-w-6xl gap-7 px-4 py-12 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8 lg:py-16">
+        <div
+          id="club-interest"
+          className="mx-auto grid w-full max-w-6xl scroll-mt-6 gap-7 px-4 py-12 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8 lg:py-16"
+        >
           <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-court-ocean">
               For clubs
