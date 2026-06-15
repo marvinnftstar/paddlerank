@@ -290,10 +290,17 @@ export default async function DashboardPage() {
                 </span>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-dashed border-court-teal/30 bg-court-mist px-4 py-6 text-center sm:mt-6 sm:px-5 sm:py-8">
+              <div className="mt-5 flex flex-col items-center rounded-2xl border border-dashed border-court-teal/30 bg-court-mist px-4 py-6 text-center sm:mt-6 sm:px-5 sm:py-8">
                 <p className="mx-auto max-w-md text-sm leading-6 text-slate-600">
-                  Open Matches to add a result or review your latest games.
+                  View, edit, or manage your match history from the Matches
+                  page.
                 </p>
+                <Link
+                  href="/matches"
+                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-court-mint px-5 py-2 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean sm:w-auto"
+                >
+                  Open Matches
+                </Link>
               </div>
             </section>
 
