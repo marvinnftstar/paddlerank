@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export function Hero() {
   return (
@@ -6,7 +7,7 @@ export function Hero() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(134,218,122,0.32),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(16,191,160,0.28),transparent_36%)]" />
 
       <div className="relative mx-auto flex min-h-[calc(92vh-2rem)] max-w-6xl flex-col">
-        <header className="flex items-center justify-between gap-4">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <a href="#" className="flex items-center gap-3">
             <Image
               src="/PaddleRank.png"
@@ -24,12 +25,20 @@ export function Hero() {
             </div>
           </a>
 
-          <a
-            href="#waitlist"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-court-green px-5 py-2 text-sm font-black text-court-navy shadow-glow transition hover:bg-white"
-          >
-            Join the Waitlist
-          </a>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+            <Link
+              href="/login"
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/60 px-4 py-2 text-sm font-black text-white transition hover:border-white hover:bg-white hover:text-court-navy sm:min-w-20"
+            >
+              Login
+            </Link>
+            <a
+              href="#waitlist"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-court-green px-4 py-2 text-sm font-black text-court-navy shadow-glow transition hover:bg-white sm:px-5"
+            >
+              Join the Waitlist
+            </a>
+          </div>
         </header>
 
         <div className="mx-auto flex max-w-4xl flex-1 flex-col items-center justify-center pb-7 pt-6 text-center sm:pb-10 sm:pt-9 lg:py-10">
@@ -55,12 +64,20 @@ export function Hero() {
             tracking and ranking platform for players across the Philippines.
           </p>
 
-          <a
-            href="#waitlist"
-            className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-court-green px-8 py-4 text-base font-black text-court-navy shadow-glow transition hover:bg-white"
-          >
-            Join the Waitlist
-          </a>
+          <div className="mt-5 flex w-full max-w-sm flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row">
+            <a
+              href="#waitlist"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-court-green px-8 py-4 text-base font-black text-court-navy shadow-glow transition hover:bg-white"
+            >
+              Join the Waitlist
+            </a>
+            <a
+              href="#clubs"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/50 bg-white/10 px-8 py-4 text-base font-black text-white transition hover:border-white hover:bg-white hover:text-court-navy"
+            >
+              For Clubs
+            </a>
+          </div>
 
           <p className="mt-4 inline-flex max-w-xs items-center justify-center rounded-full border border-court-green/60 bg-court-green/15 px-4 py-2 text-center text-xs font-black uppercase tracking-wide text-court-green sm:max-w-none sm:text-sm">
             Limited early access: First 100 registered players only.
