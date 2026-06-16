@@ -29,7 +29,8 @@ export default function EarlyAccessPage() {
             Early access
           </p>
           <h1 className="mt-3 text-3xl font-black leading-tight text-court-navy">
-            You're on the waitlist. PaddleRank early access is opening soon.
+            Thanks for joining PaddleRank. Your account is still waiting for
+            early-access approval.
           </h1>
           <Link
             href="/"
