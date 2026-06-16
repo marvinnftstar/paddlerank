@@ -198,9 +198,12 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               >
                 Matches
               </Link>
-              <span className="flex-1 whitespace-nowrap rounded-xl px-3 py-2 text-center text-sm font-black text-slate-500 lg:flex-none">
+              <Link
+                href="/clubs"
+                className="flex-1 whitespace-nowrap rounded-xl px-3 py-2 text-center text-sm font-black text-slate-500 transition hover:text-court-navy lg:flex-none"
+              >
                 Clubs
-              </span>
+              </Link>
             </nav>
 
             <form action={logout} className="hidden lg:block">
