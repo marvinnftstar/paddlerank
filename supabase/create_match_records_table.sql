@@ -6,6 +6,14 @@ create table if not exists public.match_records (
   partner_name text,
   score text not null,
   result text not null check (result in ('win', 'loss')),
+  verification_status text not null default 'pending' check (
+    verification_status in (
+      'pending',
+      'confirmed',
+      'disputed',
+      'admin_verified'
+    )
+  ),
   match_date date not null,
   notes text,
   created_at timestamp with time zone not null default now(),

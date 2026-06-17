@@ -2,6 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 import { useFormStatus } from "react-dom";
+import {
+  getMatchVerificationStatus,
+  type MatchVerificationStatus,
+} from "@/lib/matches";
 
 type MatchRecord = {
   id: string;
@@ -10,6 +14,7 @@ type MatchRecord = {
   partner_name: string | null;
   score: string;
   result: "win" | "loss";
+  verification_status?: MatchVerificationStatus | null;
   match_date: string;
   notes: string | null;
 };
@@ -38,6 +43,20 @@ const MAX_OPPONENT_LENGTH = 100;
 const MAX_PARTNER_LENGTH = 100;
 const MAX_SCORE_LENGTH = 100;
 const MAX_NOTES_LENGTH = 1000;
+
+const statusBadgeStyles: Record<MatchVerificationStatus, string> = {
+  pending: "border-amber-200 bg-amber-50 text-amber-800",
+  confirmed: "border-court-green/40 bg-court-green/15 text-court-navy",
+  disputed: "border-red-200 bg-red-50 text-red-700",
+  admin_verified: "border-court-mint/40 bg-court-mint/15 text-court-navy",
+};
+
+const statusLabels: Record<MatchVerificationStatus, string> = {
+  pending: "Pending verification",
+  confirmed: "Confirmed",
+  disputed: "Disputed",
+  admin_verified: "Admin verified",
+};
 
 function SaveEditButton() {
   const { pending } = useFormStatus();
@@ -78,6 +97,9 @@ export function MatchHistoryItem({
   const [isEditing, setIsEditing] = useState(false);
   const [matchType, setMatchType] = useState(match.match_type);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const verificationStatus = getMatchVerificationStatus(
+    match.verification_status,
+  );
 
   function validateEdit(event: FormEvent<HTMLFormElement>) {
     const formData = new FormData(event.currentTarget);
@@ -159,6 +181,11 @@ export function MatchHistoryItem({
             </span>
             <span className="rounded-full bg-white px-3 py-1 text-xs font-black uppercase tracking-wide text-court-ocean">
               {match.match_type}
+            </span>
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wide ${statusBadgeStyles[verificationStatus]}`}
+            >
+              {statusLabels[verificationStatus]}
             </span>
           </div>
           <h3 className="mt-3 break-words text-lg font-black text-court-navy">

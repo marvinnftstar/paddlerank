@@ -274,6 +274,11 @@ export default async function DashboardPage() {
             ))}
           </div>
 
+          <p className="mt-4 rounded-2xl border border-court-teal/15 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-600 shadow-sm">
+            Current stats include submitted matches. Official rankings will
+            later use verified matches only.
+          </p>
+
           <div className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
             <section className="rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm sm:p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
