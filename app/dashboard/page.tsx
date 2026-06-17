@@ -15,7 +15,7 @@ const navItems = [
   { label: "Dashboard" },
   { label: "Profile", href: "/profile" },
   { label: "Matches", href: "/matches" },
-  { label: "Clubs" },
+  { label: "Clubs", href: "/clubs" },
 ];
 
 const nextSteps = [
