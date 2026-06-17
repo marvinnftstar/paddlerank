@@ -222,3 +222,9 @@ npm run build
    * `NEXT_PUBLIC_SUPABASE_URL`
    * `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 4. Deploy.
+
+## Vercel Web Analytics
+
+PaddleRank uses `@vercel/analytics` in the root layout. After the app is
+deployed on Vercel, website traffic will appear in the Vercel project
+Analytics dashboard.
