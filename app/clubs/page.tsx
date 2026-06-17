@@ -12,7 +12,7 @@ const clubHighlights = [
     body: "Create a home for your club on PaddleRank.",
   },
   {
-    title: "Player Activity",
+    title: "Member Tracking",
     body: "Help members track matches and progress over time.",
   },
   {
@@ -20,7 +20,7 @@ const clubHighlights = [
     body: "Prepare your community for future verified rankings.",
   },
   {
-    title: "Future Events",
+    title: "Future Club Events",
     body: "Club calendars and event tools are planned for a future phase.",
   },
 ];
@@ -142,9 +142,10 @@ export default async function ClubsPage() {
                   Bring PaddleRank to Your Pickleball Club
                 </h1>
                 <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-                  PaddleRank is preparing simple club validation tools for
-                  pickleball communities. This page keeps club interest easy to
-                  find while deeper club features stay planned for later.
+                  PaddleRank is preparing tools for clubs to organize players,
+                  track match activity, and support fair community rankings. We
+                  are currently accepting early club interest while we validate
+                  the best features for pickleball communities.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                   <Link
@@ -154,7 +155,8 @@ export default async function ClubsPage() {
                     Register Club Interest
                   </Link>
                   <p className="rounded-2xl border border-court-teal/20 bg-court-mist px-4 py-3 text-sm font-semibold text-court-navy">
-                    Early club interest helps shape the MVP roadmap.
+                    Early clubs can onboard up to 15 members for free during
+                    validation.
                   </p>
                 </div>
               </div>
@@ -167,8 +169,9 @@ export default async function ClubsPage() {
                   Built with clubs, not ahead of them.
                 </p>
                 <p className="mt-3 text-sm leading-6 text-white/80">
-                  Share interest now so PaddleRank can learn what organizers
-                  and players need most before larger club tools are built.
+                  Share your interest now so PaddleRank can learn what club
+                  organizers and players need most before deeper tools are
+                  built.
                 </p>
               </div>
             </div>
@@ -199,8 +202,9 @@ export default async function ClubsPage() {
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               PaddleRank is currently inviting early clubs to share their
-              interest and help shape the first version of club support. Full
-              club management features will be added only after validation.
+              interest and help shape the first version of club tools. Full
+              club management, events, calendars, payments, rankings, and
+              member limits will be added only after validation.
             </p>
           </section>
         </div>
