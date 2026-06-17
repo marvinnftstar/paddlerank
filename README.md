@@ -171,6 +171,13 @@ New club submissions are saved with `status = 'pending'`. Pending clubs are not
 shown in the directory. To publish a club, open the `clubs` table in Supabase
 and manually change its `status` value from `pending` to `approved`.
 
+Existing projects that already created the `clubs` table should also run this
+SQL file so users can see their own pending submission status:
+
+```text
+supabase/update_clubs_read_policy_for_submitters.sql
+```
+
 The club logo is URL-only for now. Do not upload files or storage objects for
 club logos yet.
 

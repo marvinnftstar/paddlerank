@@ -23,6 +23,12 @@ type ClubRow = {
   logo_url: string | null;
 };
 
+type CurrentUserClubRow = {
+  id: string;
+  club_name: string;
+  status: "pending" | "approved";
+};
+
 const CLUB_FIELD_LIMITS = {
   clubName: 120,
   city: 120,
@@ -37,6 +43,8 @@ const CLUB_FIELD_LIMITS = {
 
 const APPROVED_CLUBS_SELECT =
   "id, club_name, city, description, home_court, playing_schedule, logo_url";
+
+const CURRENT_USER_CLUB_SELECT = "id, club_name, status";
 
 function getFormValue(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -140,6 +148,25 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
 
   const approvedClubs = clubsResult.data || [];
 
+  const currentUserClubResult = await supabase
+    .from("clubs")
+    .select(CURRENT_USER_CLUB_SELECT)
+    .eq("submitted_by", user.id)
+    .in("status", ["pending", "approved"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .returns<CurrentUserClubRow[]>();
+
+  const currentUserClub = currentUserClubResult.data?.[0] || null;
+  const currentUserClubError = currentUserClubResult.error;
+  const canSubmitClub = !currentUserClub && !currentUserClubError;
+  const clubStatusMessage =
+    currentUserClub?.status === "approved"
+      ? "Your club profile is live in the PaddleRank club directory."
+      : currentUserClub?.status === "pending"
+        ? "Your club profile has been submitted for review."
+        : null;
+
   async function submitClub(formData: FormData) {
     "use server";
 
@@ -161,6 +188,26 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
 
     if (!access.isApproved) {
       redirect("/early-access");
+    }
+
+    const { data: existingClubSubmissions, error: existingClubError } =
+      await supabase
+        .from("clubs")
+        .select("id, status")
+        .eq("submitted_by", user.id)
+        .in("status", ["pending", "approved"])
+        .limit(1);
+
+    if (existingClubError) {
+      console.error(
+        "PaddleRank club submission status check error:",
+        existingClubError,
+      );
+      redirect("/clubs?error=status-check-failed#submit-club");
+    }
+
+    if ((existingClubSubmissions || []).length > 0) {
+      redirect("/clubs#submit-club");
     }
 
     const clubValues = parseClubForm(formData);
@@ -280,15 +327,17 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                   appear in the PaddleRank club directory for players to find.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <a
-                    href="#submit-club"
-                    className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean sm:w-auto"
-                  >
-                    Submit Club Profile
-                  </a>
+                  {canSubmitClub ? (
+                    <a
+                      href="#submit-club"
+                      className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean sm:w-auto"
+                    >
+                      Submit Club Profile
+                    </a>
+                  ) : null}
                   <p className="rounded-2xl border border-court-teal/20 bg-court-mist px-4 py-3 text-sm font-semibold text-court-navy">
-                    Club submissions are reviewed before appearing in the
-                    directory.
+                    {clubStatusMessage ||
+                      "Club submissions are reviewed before appearing in the directory."}
                   </p>
                 </div>
               </div>
@@ -318,12 +367,14 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                   PaddleRank club directory
                 </h2>
               </div>
-              <a
-                href="#submit-club"
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-court-teal/25 bg-white px-5 py-2 text-sm font-black text-court-navy shadow-sm transition hover:border-court-mint hover:text-court-ocean sm:w-auto"
-              >
-                Submit Club Profile
-              </a>
+              {canSubmitClub ? (
+                <a
+                  href="#submit-club"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-court-teal/25 bg-white px-5 py-2 text-sm font-black text-court-navy shadow-sm transition hover:border-court-mint hover:text-court-ocean sm:w-auto"
+                >
+                  Submit Club Profile
+                </a>
+              ) : null}
             </div>
 
             {clubsResult.error ? (
@@ -340,12 +391,14 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                   Be one of the first clubs to join PaddleRank. Approved clubs
                   will appear here after review.
                 </p>
-                <a
-                  href="#submit-club"
-                  className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean sm:w-auto"
-                >
-                  Submit Club Profile
-                </a>
+                {canSubmitClub ? (
+                  <a
+                    href="#submit-club"
+                    className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean sm:w-auto"
+                  >
+                    Submit Club Profile
+                  </a>
+                ) : null}
               </div>
             ) : (
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -429,6 +482,29 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
               ) : null}
             </div>
 
+            {clubStatusMessage ? (
+              <div className="mt-6 rounded-2xl border border-court-teal/15 bg-court-mist px-4 py-5 shadow-sm sm:px-5">
+                <p className="text-lg font-black text-court-navy">
+                  {clubStatusMessage}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {currentUserClub?.status === "approved"
+                    ? `${currentUserClub.club_name} is visible to approved PaddleRank players browsing the club directory.`
+                    : `${currentUserClub?.club_name} will appear in the directory after review and approval.`}
+                </p>
+              </div>
+            ) : null}
+
+            {currentUserClubError ? (
+              <p
+                role="alert"
+                className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+              >
+                We could not check your club submission status. Please try
+                again.
+              </p>
+            ) : null}
+
             {params.error ? (
               <p
                 role="alert"
@@ -436,142 +512,146 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
               >
                 {params.error === "invalid-fields"
                   ? "Please review the required fields and logo URL, then try again."
-                  : "We could not save this club profile. Please check the clubs table setup."}
+                  : params.error === "status-check-failed"
+                    ? "We could not check your club submission status. Please try again."
+                    : "We could not save this club profile. Please check the clubs table setup."}
               </p>
             ) : null}
 
-            <form action={submitClub} className="mt-6 grid gap-5 sm:grid-cols-2">
-              <label className="sm:col-span-2">
-                <span className="text-sm font-semibold text-court-navy">
-                  Club Name *
-                </span>
-                <input
-                  name="club_name"
-                  type="text"
-                  required
-                  maxLength={CLUB_FIELD_LIMITS.clubName}
-                  placeholder="Your pickleball club"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+            {canSubmitClub ? (
+              <form action={submitClub} className="mt-6 grid gap-5 sm:grid-cols-2">
+                <label className="sm:col-span-2">
+                  <span className="text-sm font-semibold text-court-navy">
+                    Club Name *
+                  </span>
+                  <input
+                    name="club_name"
+                    type="text"
+                    required
+                    maxLength={CLUB_FIELD_LIMITS.clubName}
+                    placeholder="Your pickleball club"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <label>
-                <span className="text-sm font-semibold text-court-navy">
-                  City / Location *
-                </span>
-                <input
-                  name="city"
-                  type="text"
-                  required
-                  maxLength={CLUB_FIELD_LIMITS.city}
-                  placeholder="Quezon City"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+                <label>
+                  <span className="text-sm font-semibold text-court-navy">
+                    City / Location *
+                  </span>
+                  <input
+                    name="city"
+                    type="text"
+                    required
+                    maxLength={CLUB_FIELD_LIMITS.city}
+                    placeholder="Quezon City"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <label>
-                <span className="text-sm font-semibold text-court-navy">
-                  Contact Person *
-                </span>
-                <input
-                  name="contact_person"
-                  type="text"
-                  required
-                  maxLength={CLUB_FIELD_LIMITS.contactPerson}
-                  placeholder="Full name"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+                <label>
+                  <span className="text-sm font-semibold text-court-navy">
+                    Contact Person *
+                  </span>
+                  <input
+                    name="contact_person"
+                    type="text"
+                    required
+                    maxLength={CLUB_FIELD_LIMITS.contactPerson}
+                    placeholder="Full name"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <label>
-                <span className="text-sm font-semibold text-court-navy">
-                  Contact Email *
-                </span>
-                <input
-                  name="contact_email"
-                  type="email"
-                  required
-                  maxLength={CLUB_FIELD_LIMITS.contactEmail}
-                  placeholder="club@example.com"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+                <label>
+                  <span className="text-sm font-semibold text-court-navy">
+                    Contact Email *
+                  </span>
+                  <input
+                    name="contact_email"
+                    type="email"
+                    required
+                    maxLength={CLUB_FIELD_LIMITS.contactEmail}
+                    placeholder="club@example.com"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <label>
-                <span className="text-sm font-semibold text-court-navy">
-                  Contact Number
-                </span>
-                <input
-                  name="contact_number"
-                  type="tel"
-                  maxLength={CLUB_FIELD_LIMITS.contactNumber}
-                  placeholder="09..."
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+                <label>
+                  <span className="text-sm font-semibold text-court-navy">
+                    Contact Number
+                  </span>
+                  <input
+                    name="contact_number"
+                    type="tel"
+                    maxLength={CLUB_FIELD_LIMITS.contactNumber}
+                    placeholder="09..."
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <label className="sm:col-span-2">
-                <span className="text-sm font-semibold text-court-navy">
-                  Club Description *
-                </span>
-                <textarea
-                  name="description"
-                  required
-                  maxLength={CLUB_FIELD_LIMITS.description}
-                  rows={4}
-                  placeholder="Tell players what makes your club welcoming and competitive."
-                  className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+                <label className="sm:col-span-2">
+                  <span className="text-sm font-semibold text-court-navy">
+                    Club Description *
+                  </span>
+                  <textarea
+                    name="description"
+                    required
+                    maxLength={CLUB_FIELD_LIMITS.description}
+                    rows={4}
+                    placeholder="Tell players what makes your club welcoming and competitive."
+                    className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <label>
-                <span className="text-sm font-semibold text-court-navy">
-                  Home Court / Location
-                </span>
-                <input
-                  name="home_court"
-                  type="text"
-                  maxLength={CLUB_FIELD_LIMITS.homeCourt}
-                  placeholder="Main court or venue"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+                <label>
+                  <span className="text-sm font-semibold text-court-navy">
+                    Home Court / Location
+                  </span>
+                  <input
+                    name="home_court"
+                    type="text"
+                    maxLength={CLUB_FIELD_LIMITS.homeCourt}
+                    placeholder="Main court or venue"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <label>
-                <span className="text-sm font-semibold text-court-navy">
-                  Playing Schedule
-                </span>
-                <input
-                  name="playing_schedule"
-                  type="text"
-                  maxLength={CLUB_FIELD_LIMITS.playingSchedule}
-                  placeholder="Saturdays, 7 AM"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+                <label>
+                  <span className="text-sm font-semibold text-court-navy">
+                    Playing Schedule
+                  </span>
+                  <input
+                    name="playing_schedule"
+                    type="text"
+                    maxLength={CLUB_FIELD_LIMITS.playingSchedule}
+                    placeholder="Saturdays, 7 AM"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <label className="sm:col-span-2">
-                <span className="text-sm font-semibold text-court-navy">
-                  Club Logo URL
-                </span>
-                <input
-                  name="logo_url"
-                  type="url"
-                  maxLength={CLUB_FIELD_LIMITS.logoUrl}
-                  placeholder="https://..."
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
-                />
-              </label>
+                <label className="sm:col-span-2">
+                  <span className="text-sm font-semibold text-court-navy">
+                    Club Logo URL
+                  </span>
+                  <input
+                    name="logo_url"
+                    type="url"
+                    maxLength={CLUB_FIELD_LIMITS.logoUrl}
+                    placeholder="https://..."
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
 
-              <div className="sm:col-span-2">
-                <button
-                  type="submit"
-                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white transition hover:bg-court-ocean sm:w-auto"
-                >
-                  Submit Club Profile
-                </button>
-              </div>
-            </form>
+                <div className="sm:col-span-2">
+                  <button
+                    type="submit"
+                    className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white transition hover:bg-court-ocean sm:w-auto"
+                  >
+                    Submit Club Profile
+                  </button>
+                </div>
+              </form>
+            ) : null}
           </section>
         </div>
       </section>

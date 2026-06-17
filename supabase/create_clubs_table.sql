@@ -33,7 +33,10 @@ begin
     on public.clubs
     for select
     to authenticated
-    using (status = 'approved');
+    using (
+      status = 'approved'
+      or submitted_by = auth.uid()
+    );
   end if;
 end $$;
 
