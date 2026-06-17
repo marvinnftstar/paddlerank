@@ -14,8 +14,8 @@ PaddleRank is a one-page waitlist landing page for an upcoming pickleball match 
 
 ## Current Version
 
-The current MVP focuses on player early access and lightweight club interest
-validation.
+The current MVP focuses on player early access, match tracking, and lightweight
+club onboarding.
 
 The page includes:
 
@@ -24,12 +24,15 @@ The page includes:
 * Short waitlist description
 * Supabase-powered waitlist form
 * Login link for approved players
-* Club interest form that opens a prefilled email draft
+* Logged-in Clubs page with approved club directory
+* Supabase-powered club submission form for review
 * Small feature highlights
 * Footer
 
-Club interest is validation only. It does not create club accounts, store club
-data, or include club dashboards, calendars, payments, or member-limit logic.
+Club onboarding starts with simple club profile submissions. New submissions
+are saved as `pending` and must be manually changed to `approved` in Supabase
+before they appear in the club directory. It does not include club accounts,
+club dashboards, calendars, payments, or member-limit logic.
 
 ## Logo
 
@@ -140,6 +143,36 @@ status safely. Apply it manually in Supabase only after reviewing it:
 ```text
 supabase/add_match_verification_status.sql
 ```
+
+## Club Setup
+
+PaddleRank stores club profile submissions in a `clubs` table.
+
+Run this SQL in the Supabase SQL Editor:
+
+```text
+supabase/create_clubs_table.sql
+```
+
+The club table stores:
+
+* club name
+* city or location
+* contact person
+* contact email
+* optional contact number
+* club description
+* optional home court
+* optional playing schedule
+* optional logo URL
+* approval status
+
+New club submissions are saved with `status = 'pending'`. Pending clubs are not
+shown in the directory. To publish a club, open the `clubs` table in Supabase
+and manually change its `status` value from `pending` to `approved`.
+
+The club logo is URL-only for now. Do not upload files or storage objects for
+club logos yet.
 
 ## Environment Variables
 
