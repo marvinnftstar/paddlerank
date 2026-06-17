@@ -144,6 +144,18 @@ status safely. Apply it manually in Supabase only after reviewing it:
 supabase/add_match_verification_status.sql
 ```
 
+To enable opponent confirmation links, also run this SQL file in the Supabase
+SQL Editor:
+
+```text
+supabase/add_opponent_match_confirmation.sql
+```
+
+Each new match starts as `pending`. The player can open the confirmation page
+from match history and share its private link with the opponent. The opponent
+can mark the match as `confirmed` or `disputed`. Editing a match returns it to
+`pending` so the changed result can be reviewed again.
+
 ## Club Setup
 
 PaddleRank stores club profile submissions in a `clubs` table.
@@ -188,9 +200,12 @@ Create a `.env.local` file in the root folder:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
-Use `.env.example` as the safe template. Do not put real keys in documentation.
+Use `.env.example` as the safe template. `SUPABASE_SERVICE_ROLE_KEY` is used
+only by the server-side match confirmation page. Never prefix it with
+`NEXT_PUBLIC_`, expose it in browser code, or put real keys in documentation.
 
 ## Google Login Setup
 
@@ -261,6 +276,7 @@ npm run build
 3. Add these Vercel environment variables:
    * `NEXT_PUBLIC_SUPABASE_URL`
    * `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   * `SUPABASE_SERVICE_ROLE_KEY`
 4. Deploy.
 
 ## Vercel Web Analytics

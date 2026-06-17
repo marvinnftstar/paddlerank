@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useFormStatus } from "react-dom";
 import {
@@ -15,6 +16,7 @@ type MatchRecord = {
   score: string;
   result: "win" | "loss";
   verification_status?: MatchVerificationStatus | null;
+  confirmation_token?: string | null;
   match_date: string;
   notes: string | null;
 };
@@ -49,13 +51,15 @@ const statusBadgeStyles: Record<MatchVerificationStatus, string> = {
   confirmed: "border-court-green/40 bg-court-green/15 text-court-navy",
   disputed: "border-red-200 bg-red-50 text-red-700",
   admin_verified: "border-court-mint/40 bg-court-mint/15 text-court-navy",
+  rejected: "border-slate-300 bg-slate-100 text-slate-700",
 };
 
 const statusLabels: Record<MatchVerificationStatus, string> = {
-  pending: "Pending verification",
+  pending: "Pending confirmation",
   confirmed: "Confirmed",
   disputed: "Disputed",
   admin_verified: "Admin verified",
+  rejected: "Rejected",
 };
 
 function SaveEditButton() {
@@ -212,6 +216,21 @@ export function MatchHistoryItem({
         <p className="mt-4 whitespace-pre-wrap break-words border-t border-court-teal/15 pt-4 text-sm leading-6 text-slate-600">
           {match.notes}
         </p>
+      ) : null}
+
+      {verificationStatus === "pending" && match.confirmation_token ? (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-sm font-semibold leading-6 text-amber-900">
+            Share the confirmation page with your opponent so they can confirm
+            or dispute this result.
+          </p>
+          <Link
+            href={`/confirm-match/${match.id}?token=${match.confirmation_token}`}
+            className="mt-2 inline-flex min-h-10 items-center justify-center rounded-lg bg-amber-900 px-4 py-2 text-sm font-black text-white transition hover:bg-court-navy"
+          >
+            Open confirmation page
+          </Link>
+        </div>
       ) : null}
 
       <div className="mt-4 grid grid-cols-2 gap-2 border-t border-court-teal/15 pt-4 sm:flex sm:flex-row">
