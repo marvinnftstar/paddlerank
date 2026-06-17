@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MatchHistoryItem } from "@/components/matches/MatchHistoryItem";
 import { MatchForm } from "@/components/matches/MatchForm";
+import { type MatchVerificationStatus } from "@/lib/matches";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
@@ -24,6 +25,7 @@ type MatchRecord = {
   partner_name: string | null;
   score: string;
   result: "win" | "loss";
+  verification_status: MatchVerificationStatus | null;
   match_date: string;
   notes: string | null;
   created_at: string;
@@ -35,6 +37,12 @@ const MATCH_FIELD_LIMITS = {
   score: 100,
   notes: 1000,
 };
+
+const MATCH_HISTORY_SELECT =
+  "id, match_type, opponent_name, partner_name, score, result, verification_status, match_date, notes, created_at";
+
+const MATCH_HISTORY_SELECT_WITHOUT_STATUS =
+  "id, match_type, opponent_name, partner_name, score, result, match_date, notes, created_at";
 
 function getFormValue(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -129,18 +137,27 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     redirect("/early-access");
   }
 
-  const { data, error: historyError } = await supabase
+  let historyResult = await supabase
     .from("match_records")
-    .select(
-      "id, match_type, opponent_name, partner_name, score, result, match_date, notes, created_at",
-    )
+    .select(MATCH_HISTORY_SELECT)
     .eq("user_id", user.id)
     .order("match_date", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(20)
     .returns<MatchRecord[]>();
 
-  const matches = data || [];
+  if (historyResult.error?.message.includes("verification_status")) {
+    historyResult = await supabase
+      .from("match_records")
+      .select(MATCH_HISTORY_SELECT_WITHOUT_STATUS)
+      .eq("user_id", user.id)
+      .order("match_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .returns<MatchRecord[]>();
+  }
+
+  const matches = historyResult.data || [];
 
   async function saveMatch(formData: FormData) {
     "use server";
@@ -435,7 +452,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 </h2>
               </div>
 
-              {historyError ? (
+              {historyResult.error ? (
                 <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                   Match history could not be loaded.
                 </p>

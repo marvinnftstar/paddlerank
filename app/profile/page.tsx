@@ -231,6 +231,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               Add the details that help PaddleRank feel like your home court.
               You can update them anytime.
             </p>
+            <p className="mt-4 rounded-2xl border border-court-teal/15 bg-court-mist px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
+              Current stats include submitted matches. Official rankings will
+              later use verified matches only.
+            </p>
             {user.email ? (
               <p className="mt-5 rounded-2xl border border-court-teal/20 bg-court-mist px-4 py-3 text-sm font-semibold text-court-navy">
                 Signed in as {user.email}

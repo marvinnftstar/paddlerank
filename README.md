@@ -130,8 +130,16 @@ supabase/create_match_records_table.sql
 ```
 
 The match tracking MVP supports singles and doubles, manual opponent and
-partner names, score, result, match date, and optional notes. Row Level
+partner names, score, result, match date, optional notes, and match
+verification status. New submitted matches are `pending` by default. Row Level
 Security limits each player to their own match records.
+
+Existing projects can use the local SQL file below to add match verification
+status safely. Apply it manually in Supabase only after reviewing it:
+
+```text
+supabase/add_match_verification_status.sql
+```
 
 ## Environment Variables
 
