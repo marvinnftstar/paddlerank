@@ -19,18 +19,18 @@ function getFriendlySupabaseError(error: { code?: string; message?: string }) {
   }
 
   if (message.includes("row-level security") || error.code === "42501") {
-    return "Supabase is blocking signups. Please run the row level security policy from supabase/schema.sql.";
+    return "We couldn't complete your signup. Please try again.";
   }
 
   if (message.includes("relation") && message.includes("does not exist")) {
-    return "The waitlist_signups table does not exist yet. Please run the SQL in supabase/schema.sql.";
+    return "We couldn't complete your signup. Please try again.";
   }
 
   if (message.includes("invalid api key") || message.includes("jwt")) {
-    return "The Supabase key looks incorrect. Please check NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.";
+    return "We couldn't complete your signup. Please try again.";
   }
 
-  return `Supabase error: ${error.message || "Please check your Supabase table and policies."}`;
+  return "We couldn't complete your signup. Please try again.";
 }
 
 export function WaitlistForm() {
@@ -70,7 +70,7 @@ export function WaitlistForm() {
       setStatus({
         type: "error",
         message:
-          "Supabase is not connected yet. Add your keys to .env.local, then restart the app.",
+          "We couldn't open signups. Please try again.",
       });
       setIsSubmitting(false);
       return;
@@ -204,7 +204,7 @@ export function WaitlistForm() {
           <textarea
             name="message"
             rows={4}
-            placeholder="What should PaddleRank help you track first?"
+            placeholder="Tell us what you would like from PaddleRank."
             className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
           />
         </label>

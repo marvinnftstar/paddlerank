@@ -5,14 +5,14 @@ const steps = [
       "Share your name, email, location, skill level, and preferred play type.",
   },
   {
-    title: "Help shape Version 1",
+    title: "Share how you play",
     description:
-      "Your signup helps prioritize cities, player needs, and the first ranking features.",
+      "Tell us your location, skill level, and preferred way to play.",
   },
   {
     title: "Get early access",
     description:
-      "Early users will be notified when PaddleRank is ready for match tracking and rankings.",
+      "We will email you when your PaddleRank access is approved.",
   },
 ];
 
@@ -28,7 +28,7 @@ export function HowItWorks() {
             How it works
           </p>
           <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-            Simple now. Ready for bigger competition later.
+            A clear path to your PaddleRank account.
           </h2>
         </div>
 

@@ -19,7 +19,7 @@ export function LoginForm({ initialErrorMessage = "" }: LoginFormProps) {
 
     if (!supabase) {
       setErrorMessage(
-        "Supabase is not connected yet. Add your public Supabase keys, then restart the app.",
+        "We couldn't open login. Please try again.",
       );
       setIsLoading(false);
       return;
@@ -50,7 +50,7 @@ export function LoginForm({ initialErrorMessage = "" }: LoginFormProps) {
           Continue to PaddleRank.
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Sign in with Google to access your protected dashboard.
+          Sign in with Google to open your PaddleRank dashboard.
         </p>
       </div>
 

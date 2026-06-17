@@ -29,9 +29,12 @@ export default function EarlyAccessPage() {
             Early access
           </p>
           <h1 className="mt-3 text-3xl font-black leading-tight text-court-navy">
-            Thanks for joining PaddleRank. Your account is still waiting for
-            early-access approval.
+            Your access request has been received.
           </h1>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Thanks for joining PaddleRank. We&apos;ll email you when your account
+            is approved.
+          </p>
           <Link
             href="/"
             className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white transition hover:bg-court-ocean"

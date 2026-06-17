@@ -1,15 +1,15 @@
 const features = [
   {
-    title: "Track Matches",
+    title: "Match History",
     description: "Save match results and build a clean history over time.",
   },
   {
-    title: "Compete on Rankings",
-    description: "Get ready for player rankings across local communities.",
+    title: "Player Profiles",
+    description: "Keep your player details and match activity in one place.",
   },
   {
-    title: "Join Tournaments Soon",
-    description: "Future updates can support events, brackets, and clubs.",
+    title: "Club Community",
+    description: "Discover approved pickleball clubs and local playing groups.",
   },
 ];
 
@@ -19,7 +19,7 @@ export function Features() {
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-court-ocean">
-            Small highlights
+            PaddleRank essentials
           </p>
         </div>
 

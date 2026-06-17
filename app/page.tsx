@@ -22,8 +22,8 @@ export default function Home() {
               Get on the PaddleRank waitlist.
             </h2>
             <p className="mt-4 max-w-xl text-base leading-7 text-slate-700">
-              Sign up in less than a minute and be one of the first players to
-              hear when early access opens.
+              Sign up in less than a minute and we&apos;ll let you know when your
+              PaddleRank access is ready.
             </p>
           </div>
 
@@ -41,15 +41,14 @@ export default function Home() {
         >
           <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-court-ocean">
-              For clubs
+              Club visibility
             </p>
             <h2 className="mt-3 text-3xl font-black text-court-navy sm:text-4xl">
-              Bring PaddleRank to Your Club
+              Connect your club with local players.
             </h2>
             <p className="mt-4 max-w-xl text-base leading-7 text-slate-700">
-              Register your club interest and help us build the next version of
-              PaddleRank for pickleball communities. Early clubs can onboard
-              up to 15 members for free during validation.
+              Share your club details and help more players discover where your
+              community plays.
             </p>
           </div>
 

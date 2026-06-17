@@ -275,8 +275,7 @@ export default async function DashboardPage() {
           </div>
 
           <p className="mt-4 rounded-2xl border border-court-teal/15 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-600 shadow-sm">
-            Current stats include submitted matches. Official rankings will
-            later use verified matches only.
+            Your stats include every match saved to your PaddleRank history.
           </p>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">

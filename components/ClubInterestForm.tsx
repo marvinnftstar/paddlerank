@@ -48,8 +48,8 @@ export function ClubInterestForm() {
         Register your club interest
       </h3>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        Share a few club details. Submitting opens a prefilled Gmail draft, so
-        no club data is stored in PaddleRank yet.
+        Share a few club details. We&apos;ll open a prepared Gmail message for
+        you to review and send.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
