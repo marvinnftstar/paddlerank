@@ -232,8 +232,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               You can update them anytime.
             </p>
             <p className="mt-4 rounded-2xl border border-court-teal/15 bg-court-mist px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
-              Current stats include submitted matches. Official rankings will
-              later use verified matches only.
+              Your profile details help keep your PaddleRank experience
+              personal and up to date.
             </p>
             {user.email ? (
               <p className="mt-5 rounded-2xl border border-court-teal/20 bg-court-mist px-4 py-3 text-sm font-semibold text-court-navy">
@@ -267,7 +267,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                 {params.error === "missing-name"
                   ? "Please add your full name and display name."
-                  : "Profile could not be saved. Please check the profiles table setup."}
+                  : "We could not save your profile. Please try again."}
               </p>
             ) : null}
 

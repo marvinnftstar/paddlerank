@@ -60,8 +60,8 @@ export function Hero() {
             Track. Compete. Rank Up.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-white/90 sm:text-lg">
-            Join the waitlist for PaddleRank, the upcoming pickleball match
-            tracking and ranking platform for players across the Philippines.
+            Track your matches, follow your progress, and connect with the
+            growing pickleball community across the Philippines.
           </p>
 
           <div className="mt-5 flex w-full max-w-sm flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row">

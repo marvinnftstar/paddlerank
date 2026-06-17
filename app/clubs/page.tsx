@@ -162,7 +162,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
   const canSubmitClub = !currentUserClub && !currentUserClubError;
   const clubStatusMessage =
     currentUserClub?.status === "approved"
-      ? "Your club profile is live in the PaddleRank club directory."
+      ? "Your club has been approved and is now visible in the PaddleRank Club Directory."
       : currentUserClub?.status === "pending"
         ? "Your club profile has been submitted for review."
         : null;
@@ -344,14 +344,14 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
 
               <div className="rounded-2xl bg-[linear-gradient(135deg,#155A8A_0%,#0D82A7_55%,#10BFA0_100%)] p-5 text-white">
                 <p className="text-sm font-bold text-white/75">
-                  For clubs
+                  Club visibility
                 </p>
                 <p className="mt-2 text-2xl font-black">
-                  A simple profile first.
+                  Get discovered by more players.
                 </p>
                 <p className="mt-3 text-sm leading-6 text-white/80">
-                  Start with club details players need now: location, home
-                  court, schedule, and a short intro.
+                  Help local players find your club, learn where you play, and
+                  see your regular schedule.
                 </p>
               </div>
             </div>
@@ -379,8 +379,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
 
             {clubsResult.error ? (
               <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-5 text-sm font-semibold leading-6 text-red-700">
-                Club directory could not be loaded. Please check that the
-                clubs table setup has been applied in Supabase.
+                We could not load the Club Directory. Please try again.
               </div>
             ) : approvedClubs.length === 0 ? (
               <div className="mt-5 rounded-2xl border border-dashed border-court-teal/30 bg-white px-4 py-8 text-center shadow-sm sm:px-6">
@@ -489,7 +488,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   {currentUserClub?.status === "approved"
-                    ? `${currentUserClub.club_name} is visible to approved PaddleRank players browsing the club directory.`
+                    ? `${currentUserClub.club_name} is listed in the PaddleRank Club Directory.`
                     : `${currentUserClub?.club_name} will appear in the directory after review and approval.`}
                 </p>
               </div>
@@ -514,7 +513,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                   ? "Please review the required fields and logo URL, then try again."
                   : params.error === "status-check-failed"
                     ? "We could not check your club submission status. Please try again."
-                    : "We could not save this club profile. Please check the clubs table setup."}
+                    : "We could not save this club profile. Please try again."}
               </p>
             ) : null}
 

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return redirectToLogin("Supabase is not connected yet.");
+    return redirectToLogin("Login is unavailable. Please try again.");
   }
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
