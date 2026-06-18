@@ -32,7 +32,6 @@ type MatchConfirmationRow = {
 
 type ProfileNameRow = {
   display_name: string | null;
-  full_name: string | null;
 };
 
 const UUID_PATTERN =
@@ -45,6 +44,10 @@ function formatMatchDate(date: string) {
     day: "numeric",
     timeZone: "UTC",
   }).format(new Date(`${date}T00:00:00Z`));
+}
+
+function getName(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 export default async function ConfirmMatchPage({
@@ -79,11 +82,20 @@ export default async function ConfirmMatchPage({
   if (supabase && match) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("display_name, full_name")
+      .select("display_name")
       .eq("user_id", match.user_id)
       .maybeSingle<ProfileNameRow>();
 
-    playerName = profile?.display_name || profile?.full_name || playerName;
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.admin.getUserById(match.user_id);
+
+    playerName =
+      getName(profile?.display_name) ||
+      getName(authUser?.user_metadata?.name) ||
+      getName(authUser?.user_metadata?.full_name) ||
+      getName(authUser?.email) ||
+      playerName;
   }
 
   async function respondToMatch(formData: FormData) {
