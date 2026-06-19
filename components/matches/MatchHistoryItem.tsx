@@ -226,6 +226,12 @@ export function MatchHistoryItem({
           </p>
           <Link
             href={`/confirm-match/${match.id}?token=${match.confirmation_token}`}
+            onClick={() => {
+              window.sessionStorage.setItem(
+                "paddlerank-match-history-return",
+                match.id,
+              );
+            }}
             className="mt-2 inline-flex min-h-10 items-center justify-center rounded-lg bg-amber-900 px-4 py-2 text-sm font-black text-white transition hover:bg-court-navy"
           >
             Open confirmation page

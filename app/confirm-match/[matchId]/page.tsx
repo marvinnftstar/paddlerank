@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BackToMatchesButton } from "./BackToMatchesButton";
 import {
   getMatchVerificationStatus,
   type MatchVerificationStatus,
@@ -251,6 +252,8 @@ export default async function ConfirmMatchPage({
                   </form>
                 </div>
               ) : null}
+
+              <BackToMatchesButton matchId={match.id} />
             </>
           )}
         </section>
