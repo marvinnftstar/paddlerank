@@ -26,6 +26,7 @@ type MatchRecord = {
   score: string;
   result: "win" | "loss";
   verification_status: MatchVerificationStatus | null;
+  confirmation_token?: string | null;
   match_date: string;
   notes: string | null;
   created_at: string;
@@ -39,6 +40,9 @@ const MATCH_FIELD_LIMITS = {
 };
 
 const MATCH_HISTORY_SELECT =
+  "id, match_type, opponent_name, partner_name, score, result, verification_status, confirmation_token, match_date, notes, created_at";
+
+const MATCH_HISTORY_SELECT_WITHOUT_TOKEN =
   "id, match_type, opponent_name, partner_name, score, result, verification_status, match_date, notes, created_at";
 
 const MATCH_HISTORY_SELECT_WITHOUT_STATUS =
@@ -146,6 +150,17 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     .limit(20)
     .returns<MatchRecord[]>();
 
+  if (historyResult.error?.message.includes("confirmation_token")) {
+    historyResult = await supabase
+      .from("match_records")
+      .select(MATCH_HISTORY_SELECT_WITHOUT_TOKEN)
+      .eq("user_id", user.id)
+      .order("match_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .returns<MatchRecord[]>();
+  }
+
   if (historyResult.error?.message.includes("verification_status")) {
     historyResult = await supabase
       .from("match_records")
@@ -233,7 +248,11 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
     const { data, error } = await supabase
       .from("match_records")
-      .update(matchValues)
+      .update({
+        ...matchValues,
+        // Editing a result invalidates any earlier opponent response.
+        verification_status: "pending",
+      })
       .eq("id", matchId)
       .eq("user_id", user.id)
       .select("id")
@@ -394,7 +413,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   role="status"
                   className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy"
                 >
-                  Match saved. Your stats and history are up to date.
+                  Match saved. It is pending opponent confirmation.
                 </p>
               ) : null}
 
@@ -403,7 +422,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   role="status"
                   className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy"
                 >
-                  Match updated. Your stats are up to date.
+                  Match updated. It is pending opponent confirmation again.
                 </p>
               ) : null}
 

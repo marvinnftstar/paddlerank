@@ -2,13 +2,15 @@ export type MatchVerificationStatus =
   | "pending"
   | "confirmed"
   | "disputed"
-  | "admin_verified";
+  | "admin_verified"
+  | "rejected";
 
 const MATCH_VERIFICATION_STATUSES: MatchVerificationStatus[] = [
   "pending",
   "confirmed",
   "disputed",
   "admin_verified",
+  "rejected",
 ];
 
 export const DEFAULT_MATCH_VERIFICATION_STATUS: MatchVerificationStatus =

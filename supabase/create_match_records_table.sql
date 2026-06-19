@@ -11,9 +11,11 @@ create table if not exists public.match_records (
       'pending',
       'confirmed',
       'disputed',
-      'admin_verified'
+      'admin_verified',
+      'rejected'
     )
   ),
+  confirmation_token uuid not null default gen_random_uuid() unique,
   match_date date not null,
   notes text,
   created_at timestamp with time zone not null default now(),
