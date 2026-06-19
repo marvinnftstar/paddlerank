@@ -126,7 +126,7 @@ export default async function ConfirmMatchPage({
       .update({ verification_status: response })
       .eq("id", submittedMatchId)
       .eq("confirmation_token", submittedToken)
-      .in("verification_status", ["pending", "confirmed", "disputed"])
+      .eq("verification_status", "pending")
       .select("id")
       .maybeSingle();
 
@@ -145,9 +145,7 @@ export default async function ConfirmMatchPage({
     match?.verification_status,
   );
   const winner = match?.result === "win" ? playerName : match?.opponent_name;
-  const canRespond =
-    match &&
-    ["pending", "confirmed", "disputed"].includes(verificationStatus);
+  const canRespond = Boolean(match && verificationStatus === "pending");
 
   return (
     <main className="min-h-screen bg-court-mist px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
@@ -186,13 +184,13 @@ export default async function ConfirmMatchPage({
             </p>
           ) : (
             <>
-              {query.response === "confirmed" ? (
+              {verificationStatus === "confirmed" ? (
                 <p role="status" className="mt-5 rounded-xl bg-court-green/25 px-4 py-3 text-sm font-black text-court-navy">
                   Thanks! This match has been confirmed.
                 </p>
               ) : null}
 
-              {query.response === "disputed" ? (
+              {verificationStatus === "disputed" ? (
                 <p role="status" className="mt-5 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
                   This match has been marked as disputed. The PaddleRank team
                   may review it later.
