@@ -124,7 +124,11 @@ export default async function ConfirmMatchPage({
 
     const { data, error } = await supabase
       .from("match_records")
-      .update({ verification_status: response })
+      .update({
+        verification_status: response,
+        confirmation_trust_level:
+          response === "confirmed" ? "guest_confirmed" : null,
+      })
       .eq("id", submittedMatchId)
       .eq("confirmation_token", submittedToken)
       .eq("verification_status", "pending")

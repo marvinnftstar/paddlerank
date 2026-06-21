@@ -15,6 +15,9 @@ create table if not exists public.match_records (
       'rejected'
     )
   ),
+  confirmation_trust_level text check (
+    confirmation_trust_level in ('guest_confirmed', 'account_confirmed')
+  ),
   confirmation_token uuid not null default gen_random_uuid() unique,
   match_date date not null,
   notes text,

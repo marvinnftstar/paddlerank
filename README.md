@@ -156,6 +156,16 @@ from match history and share its private link with the opponent. The opponent
 can mark the match as `confirmed` or `disputed`. Editing a match returns it to
 `pending` so the changed result can be reviewed again.
 
+To distinguish shared-link confirmations from future account confirmations,
+also run this SQL file in the Supabase SQL Editor:
+
+```text
+supabase/add_match_confirmation_trust_level.sql
+```
+
+The migration safely marks existing `confirmed` matches as Guest-confirmed.
+Pending, disputed, and admin-verified matches keep an empty trust level.
+
 ## Club Setup
 
 PaddleRank stores club profile submissions in a `clubs` table.

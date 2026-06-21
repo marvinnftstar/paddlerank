@@ -3,7 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MatchHistoryItem } from "@/components/matches/MatchHistoryItem";
 import { MatchForm } from "@/components/matches/MatchForm";
-import { type MatchVerificationStatus } from "@/lib/matches";
+import {
+  type MatchConfirmationTrustLevel,
+  type MatchVerificationStatus,
+} from "@/lib/matches";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
@@ -26,6 +29,7 @@ type MatchRecord = {
   score: string;
   result: "win" | "loss";
   verification_status: MatchVerificationStatus | null;
+  confirmation_trust_level?: MatchConfirmationTrustLevel | null;
   confirmation_token?: string | null;
   match_date: string;
   notes: string | null;
@@ -40,9 +44,15 @@ const MATCH_FIELD_LIMITS = {
 };
 
 const MATCH_HISTORY_SELECT =
+  "id, match_type, opponent_name, partner_name, score, result, verification_status, confirmation_trust_level, confirmation_token, match_date, notes, created_at";
+
+const MATCH_HISTORY_SELECT_WITHOUT_TRUST_LEVEL =
   "id, match_type, opponent_name, partner_name, score, result, verification_status, confirmation_token, match_date, notes, created_at";
 
 const MATCH_HISTORY_SELECT_WITHOUT_TOKEN =
+  "id, match_type, opponent_name, partner_name, score, result, verification_status, confirmation_trust_level, match_date, notes, created_at";
+
+const MATCH_HISTORY_SELECT_WITHOUT_TRUST_LEVEL_OR_TOKEN =
   "id, match_type, opponent_name, partner_name, score, result, verification_status, match_date, notes, created_at";
 
 const MATCH_HISTORY_SELECT_WITHOUT_STATUS =
@@ -150,10 +160,28 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     .limit(20)
     .returns<MatchRecord[]>();
 
+  let trustLevelColumnAvailable = true;
+
+  if (historyResult.error?.message.includes("confirmation_trust_level")) {
+    trustLevelColumnAvailable = false;
+    historyResult = await supabase
+      .from("match_records")
+      .select(MATCH_HISTORY_SELECT_WITHOUT_TRUST_LEVEL)
+      .eq("user_id", user.id)
+      .order("match_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .returns<MatchRecord[]>();
+  }
+
   if (historyResult.error?.message.includes("confirmation_token")) {
     historyResult = await supabase
       .from("match_records")
-      .select(MATCH_HISTORY_SELECT_WITHOUT_TOKEN)
+      .select(
+        trustLevelColumnAvailable
+          ? MATCH_HISTORY_SELECT_WITHOUT_TOKEN
+          : MATCH_HISTORY_SELECT_WITHOUT_TRUST_LEVEL_OR_TOKEN,
+      )
       .eq("user_id", user.id)
       .order("match_date", { ascending: false })
       .order("created_at", { ascending: false })
@@ -252,6 +280,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         ...matchValues,
         // Editing a result invalidates any earlier opponent response.
         verification_status: "pending",
+        confirmation_trust_level: null,
       })
       .eq("id", matchId)
       .eq("user_id", user.id)

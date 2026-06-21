@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useFormStatus } from "react-dom";
 import {
+  getMatchConfirmationTrustLevel,
   getMatchVerificationStatus,
+  type MatchConfirmationTrustLevel,
   type MatchVerificationStatus,
 } from "@/lib/matches";
 
@@ -16,6 +18,7 @@ type MatchRecord = {
   score: string;
   result: "win" | "loss";
   verification_status?: MatchVerificationStatus | null;
+  confirmation_trust_level?: MatchConfirmationTrustLevel | null;
   confirmation_token?: string | null;
   match_date: string;
   notes: string | null;
@@ -55,7 +58,7 @@ const statusBadgeStyles: Record<MatchVerificationStatus, string> = {
 };
 
 const statusLabels: Record<MatchVerificationStatus, string> = {
-  pending: "Pending confirmation",
+  pending: "Pending",
   confirmed: "Confirmed",
   disputed: "Disputed",
   admin_verified: "Admin verified",
@@ -104,6 +107,25 @@ export function MatchHistoryItem({
   const verificationStatus = getMatchVerificationStatus(
     match.verification_status,
   );
+  const confirmationTrustLevel = getMatchConfirmationTrustLevel(
+    match.confirmation_trust_level,
+  );
+  const statusLabel =
+    verificationStatus === "confirmed" &&
+    confirmationTrustLevel === "guest_confirmed"
+      ? "Guest-confirmed"
+      : verificationStatus === "confirmed" &&
+          confirmationTrustLevel === "account_confirmed"
+        ? "Account-confirmed"
+        : statusLabels[verificationStatus];
+  const statusDescription =
+    verificationStatus === "confirmed" &&
+    confirmationTrustLevel === "guest_confirmed"
+      ? "Confirmed through a shared link"
+      : verificationStatus === "confirmed" &&
+          confirmationTrustLevel === "account_confirmed"
+        ? "Confirmed by a PaddleRank account"
+        : null;
 
   function validateEdit(event: FormEvent<HTMLFormElement>) {
     const formData = new FormData(event.currentTarget);
@@ -189,9 +211,14 @@ export function MatchHistoryItem({
             <span
               className={`rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wide ${statusBadgeStyles[verificationStatus]}`}
             >
-              {statusLabels[verificationStatus]}
+              {statusLabel}
             </span>
           </div>
+          {statusDescription ? (
+            <p className="mt-2 text-xs font-semibold text-slate-500">
+              {statusDescription}
+            </p>
+          ) : null}
           <h3 className="mt-3 break-words text-lg font-black text-court-navy">
             vs. {match.opponent_name}
           </h3>
