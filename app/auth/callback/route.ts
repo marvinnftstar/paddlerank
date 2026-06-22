@@ -1,19 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getSafeNextPath, isMatchConfirmationPath } from "@/lib/safeNextPath";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const nextParam = requestUrl.searchParams.get("next") || "/dashboard";
-  const next =
-    nextParam.startsWith("/") && !nextParam.startsWith("//")
-      ? nextParam
-      : "/dashboard";
+  const next = getSafeNextPath(requestUrl.searchParams.get("next"));
 
   function redirectToLogin(errorMessage: string) {
     const loginUrl = new URL("/login", requestUrl.origin);
     loginUrl.searchParams.set("error", errorMessage);
+    loginUrl.searchParams.set("next", next);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -44,6 +42,10 @@ export async function GET(request: NextRequest) {
   const access = await checkWaitlistAccess(supabase, user, "auth-callback");
 
   if (!access.isApproved) {
+    if (isMatchConfirmationPath(next)) {
+      return NextResponse.redirect(new URL(next, requestUrl.origin));
+    }
+
     return NextResponse.redirect(new URL("/early-access", requestUrl.origin));
   }
 

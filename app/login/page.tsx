@@ -2,17 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./LoginForm";
+import { getSafeNextPath, isMatchConfirmationPath } from "@/lib/safeNextPath";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 type LoginPageProps = {
   searchParams: Promise<{
     error?: string;
+    next?: string;
   }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
+  const nextPath = getSafeNextPath(params.next);
   const supabase = await createSupabaseServerClient();
 
   if (supabase) {
@@ -22,7 +25,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
     if (user) {
       const access = await checkWaitlistAccess(supabase, user, "login");
-      redirect(access.isApproved ? "/dashboard" : "/early-access");
+      redirect(
+        access.isApproved
+          ? nextPath
+          : isMatchConfirmationPath(nextPath)
+            ? nextPath
+            : "/early-access",
+      );
     }
   }
 
@@ -48,7 +57,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         </Link>
 
-        <LoginForm initialErrorMessage={params.error || ""} />
+        <LoginForm
+          initialErrorMessage={params.error || ""}
+          nextPath={nextPath}
+        />
       </div>
     </main>
   );

@@ -5,9 +5,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type LoginFormProps = {
   initialErrorMessage?: string;
+  nextPath?: string;
 };
 
-export function LoginForm({ initialErrorMessage = "" }: LoginFormProps) {
+export function LoginForm({
+  initialErrorMessage = "",
+  nextPath = "/dashboard",
+}: LoginFormProps) {
   const [errorMessage, setErrorMessage] = useState(initialErrorMessage);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,12 +29,13 @@ export function LoginForm({ initialErrorMessage = "" }: LoginFormProps) {
       return;
     }
 
-    const redirectTo = `${window.location.origin}/auth/callback?next=/dashboard`;
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    callbackUrl.searchParams.set("next", nextPath);
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo,
+        redirectTo: callbackUrl.toString(),
       },
     });
 

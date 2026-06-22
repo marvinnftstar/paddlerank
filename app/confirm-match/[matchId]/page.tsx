@@ -3,10 +3,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BackToMatchesButton } from "./BackToMatchesButton";
 import {
+  type MatchConfirmationTrustLevel,
   getMatchVerificationStatus,
   type MatchVerificationStatus,
 } from "@/lib/matches";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +31,7 @@ type MatchConfirmationRow = {
   score: string;
   result: "win" | "loss";
   verification_status: MatchVerificationStatus | null;
+  confirmation_trust_level: MatchConfirmationTrustLevel | null;
   match_date: string;
 };
 
@@ -59,7 +63,23 @@ export default async function ConfirmMatchPage({
   const query = await searchParams;
   const token = query.token || "";
   const supabase = createSupabaseAdminClient();
+  const sessionSupabase = await createSupabaseServerClient();
   const hasValidLink = UUID_PATTERN.test(matchId) && UUID_PATTERN.test(token);
+
+  const {
+    data: { user: viewer },
+  } = sessionSupabase
+    ? await sessionSupabase.auth.getUser()
+    : { data: { user: null } };
+
+  const viewerAccess =
+    sessionSupabase && viewer
+      ? await checkWaitlistAccess(
+          sessionSupabase,
+          viewer,
+          "match-confirmation-page",
+        )
+      : { isApproved: false, accessStatus: null };
 
   let match: MatchConfirmationRow | null = null;
   let loadError = !supabase || !hasValidLink;
@@ -68,7 +88,7 @@ export default async function ConfirmMatchPage({
     const result = await supabase
       .from("match_records")
       .select(
-        "id, user_id, match_type, opponent_name, partner_name, score, result, verification_status, match_date",
+        "id, user_id, match_type, opponent_name, partner_name, score, result, verification_status, confirmation_trust_level, match_date",
       )
       .eq("id", matchId)
       .eq("confirmation_token", token)
@@ -105,11 +125,17 @@ export default async function ConfirmMatchPage({
     const submittedMatchId = String(formData.get("match_id") || "");
     const submittedToken = String(formData.get("token") || "");
     const response = String(formData.get("response") || "");
+    const confirmationMethod = String(
+      formData.get("confirmation_method") || "",
+    );
 
     if (
       !UUID_PATTERN.test(submittedMatchId) ||
       !UUID_PATTERN.test(submittedToken) ||
-      (response !== "confirmed" && response !== "disputed")
+      (response !== "confirmed" && response !== "disputed") ||
+      (response === "confirmed" &&
+        confirmationMethod !== "guest" &&
+        confirmationMethod !== "account")
     ) {
       redirect(`/confirm-match/${matchId}?error=invalid-link`);
     }
@@ -122,16 +148,85 @@ export default async function ConfirmMatchPage({
       );
     }
 
-    const { data, error } = await supabase
+    const sessionSupabase = await createSupabaseServerClient();
+    const {
+      data: { user: respondingUser },
+    } = sessionSupabase
+      ? await sessionSupabase.auth.getUser()
+      : { data: { user: null } };
+
+    const { data: pendingMatch, error: pendingMatchError } = await supabase
+      .from("match_records")
+      .select("id, user_id")
+      .eq("id", submittedMatchId)
+      .eq("confirmation_token", submittedToken)
+      .eq("verification_status", "pending")
+      .maybeSingle<{ id: string; user_id: string }>();
+
+    if (pendingMatchError || !pendingMatch) {
+      redirect(
+        `/confirm-match/${submittedMatchId}?token=${submittedToken}&error=update-failed`,
+      );
+    }
+
+    if (
+      response === "confirmed" &&
+      respondingUser?.id === pendingMatch.user_id
+    ) {
+      redirect(
+        `/confirm-match/${submittedMatchId}?token=${submittedToken}&error=owner-blocked`,
+      );
+    }
+
+    const isAccountConfirmation =
+      response === "confirmed" && confirmationMethod === "account";
+
+    if (isAccountConfirmation) {
+      if (!sessionSupabase || !respondingUser) {
+        redirect(
+          `/confirm-match/${submittedMatchId}?token=${submittedToken}&error=account-login-required`,
+        );
+      }
+
+      const access = await checkWaitlistAccess(
+        sessionSupabase,
+        respondingUser,
+        "match-account-confirmation",
+      );
+
+      if (!access.isApproved) {
+        redirect(
+          `/confirm-match/${submittedMatchId}?token=${submittedToken}&error=account-not-approved`,
+        );
+      }
+    }
+
+    let updateQuery = supabase
       .from("match_records")
       .update({
         verification_status: response,
         confirmation_trust_level:
-          response === "confirmed" ? "guest_confirmed" : null,
+          response === "confirmed"
+            ? isAccountConfirmation
+              ? "account_confirmed"
+              : "guest_confirmed"
+            : null,
+        confirmed_by_user_id: isAccountConfirmation
+          ? respondingUser?.id
+          : null,
+        account_confirmed_at: isAccountConfirmation
+          ? new Date().toISOString()
+          : null,
       })
       .eq("id", submittedMatchId)
       .eq("confirmation_token", submittedToken)
-      .eq("verification_status", "pending")
+      .eq("verification_status", "pending");
+
+    if (isAccountConfirmation && respondingUser) {
+      updateQuery = updateQuery.neq("user_id", respondingUser.id);
+    }
+
+    const { data, error } = await updateQuery
       .select("id")
       .maybeSingle();
 
@@ -151,6 +246,13 @@ export default async function ConfirmMatchPage({
   );
   const winner = match?.result === "win" ? playerName : match?.opponent_name;
   const canRespond = Boolean(match && verificationStatus === "pending");
+  const isOwner = Boolean(match && viewer?.id === match.user_id);
+  const canConfirmAsGuest = canRespond && !isOwner;
+  const canConfirmWithAccount = Boolean(
+    canConfirmAsGuest && viewer && viewerAccess.isApproved,
+  );
+  const returnPath = `/confirm-match/${matchId}?token=${encodeURIComponent(token)}`;
+  const loginHref = `/login?next=${encodeURIComponent(returnPath)}`;
 
   return (
     <main className="min-h-screen bg-court-mist px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
@@ -236,16 +338,56 @@ export default async function ConfirmMatchPage({
                 </div>
               </dl>
 
+              {canRespond && isOwner ? (
+                <p role="status" className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
+                  You logged this match, so you cannot confirm it yourself. You
+                  can still dispute it if the details are incorrect.
+                </p>
+              ) : null}
+
+              {canRespond && viewer && !viewerAccess.isApproved && !isOwner ? (
+                <p role="status" className="mt-6 rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-blue-900">
+                  Account-confirmed status requires an early-access-approved
+                  PaddleRank account. You can still confirm as a guest or
+                  dispute this match.
+                </p>
+              ) : null}
+
               {canRespond ? (
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <form action={respondToMatch}>
-                    <input type="hidden" name="match_id" value={match.id} />
-                    <input type="hidden" name="token" value={token} />
-                    <input type="hidden" name="response" value="confirmed" />
-                    <button type="submit" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-5 py-3 text-sm font-black text-white transition hover:bg-court-ocean">
-                      Confirm Match
-                    </button>
-                  </form>
+                  {canConfirmWithAccount ? (
+                    <form action={respondToMatch}>
+                      <input type="hidden" name="match_id" value={match.id} />
+                      <input type="hidden" name="token" value={token} />
+                      <input type="hidden" name="response" value="confirmed" />
+                      <input type="hidden" name="confirmation_method" value="account" />
+                      <button type="submit" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-5 py-3 text-sm font-black text-white transition hover:bg-court-ocean">
+                        Confirm with PaddleRank account
+                      </button>
+                    </form>
+                  ) : null}
+
+                  {canConfirmAsGuest ? (
+                    <form action={respondToMatch}>
+                      <input type="hidden" name="match_id" value={match.id} />
+                      <input type="hidden" name="token" value={token} />
+                      <input type="hidden" name="response" value="confirmed" />
+                      <input type="hidden" name="confirmation_method" value="guest" />
+                      <button type="submit" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-court-teal/25 bg-white px-5 py-3 text-sm font-black text-court-navy transition hover:border-court-mint hover:text-court-ocean">
+                        Confirm as guest
+                      </button>
+                    </form>
+                  ) : null}
+
+                  {!viewer && canConfirmAsGuest ? (
+                    <Link
+                      href={loginHref}
+                      className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-navy px-5 py-3 text-center text-sm font-black text-white transition hover:bg-court-ocean"
+                    >
+                      Sign in to confirm with PaddleRank account
+                    </Link>
+                  ) : null}
+
                   <form action={respondToMatch}>
                     <input type="hidden" name="match_id" value={match.id} />
                     <input type="hidden" name="token" value={token} />
