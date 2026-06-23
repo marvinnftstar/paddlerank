@@ -281,6 +281,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         // Editing a result invalidates any earlier opponent response.
         verification_status: "pending",
         confirmation_trust_level: null,
+        confirmed_by_user_id: null,
+        account_confirmed_at: null,
       })
       .eq("id", matchId)
       .eq("user_id", user.id)
