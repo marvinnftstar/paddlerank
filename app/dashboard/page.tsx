@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { applyOfficialStatsEligibility } from "@/lib/officialStats";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
@@ -51,7 +52,13 @@ export default async function DashboardPage() {
     user.email ||
     "Player";
 
-  const [profileResult, winsResult, lossesResult] = await Promise.all([
+  const [
+    profileResult,
+    winsResult,
+    lossesResult,
+    officialWinsResult,
+    officialLossesResult,
+  ] = await Promise.all([
     supabase
       .from("profiles")
       .select("pickleball_club, profile_completed")
@@ -67,6 +74,20 @@ export default async function DashboardPage() {
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .eq("result", "loss"),
+    applyOfficialStatsEligibility(
+      supabase
+        .from("match_records")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("result", "win"),
+    ),
+    applyOfficialStatsEligibility(
+      supabase
+        .from("match_records")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("result", "loss"),
+    ),
   ]);
 
   const profile = profileResult.data;
@@ -78,8 +99,17 @@ export default async function DashboardPage() {
     statsAvailable && totalMatches > 0
       ? Math.round((wins / totalMatches) * 100)
       : 0;
+  const officialStatsAvailable =
+    !officialWinsResult.error && !officialLossesResult.error;
+  const officialWins = officialWinsResult.count || 0;
+  const officialLosses = officialLossesResult.count || 0;
+  const rankingEligibleMatches = officialWins + officialLosses;
+  const officialWinRate =
+    officialStatsAvailable && rankingEligibleMatches > 0
+      ? Math.round((officialWins / rankingEligibleMatches) * 100)
+      : 0;
 
-  const stats = [
+  const submittedMatchStats = [
     {
       label: "Total Matches",
       value: statsAvailable ? String(totalMatches) : "Unavailable",
@@ -108,6 +138,9 @@ export default async function DashboardPage() {
         ? "Your win percentage across logged matches."
         : "Match stats could not be loaded right now.",
     },
+  ];
+
+  const setupStats = [
     {
       label: "Club",
       value: profile?.pickleball_club || "Not set",
@@ -117,6 +150,27 @@ export default async function DashboardPage() {
       label: "Profile Status",
       value: profile?.profile_completed ? "Complete" : "Incomplete",
       helper: "Keep your player details current.",
+    },
+  ];
+
+  const officialStats = [
+    {
+      label: "Official Wins",
+      value: officialStatsAvailable ? String(officialWins) : "Unavailable",
+    },
+    {
+      label: "Official Losses",
+      value: officialStatsAvailable ? String(officialLosses) : "Unavailable",
+    },
+    {
+      label: "Official Win Rate",
+      value: officialStatsAvailable ? `${officialWinRate}%` : "Unavailable",
+    },
+    {
+      label: "Ranking-Eligible Matches",
+      value: officialStatsAvailable
+        ? String(rankingEligibleMatches)
+        : "Unavailable",
     },
   ];
 
@@ -255,8 +309,77 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {stats.map((stat) => (
+          <section className="mt-6">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-court-ocean">
+                All Submitted Matches
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Includes every match you have saved, regardless of confirmation
+                status.
+              </p>
+            </div>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {submittedMatchStats.map((stat) => (
+                <article
+                  key={stat.label}
+                  className="rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-court-mint/50 hover:shadow-glow sm:p-5"
+                >
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-court-ocean">
+                    {stat.label}
+                  </p>
+                  <p className="mt-4 text-3xl font-black text-court-navy">
+                    {stat.value}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-slate-500">
+                    {stat.helper}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-6 rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm sm:p-6">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-court-ocean">
+                Official Record
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-court-navy">
+                Verified stats for future rankings.
+              </h2>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                Official Record includes account-confirmed and admin-verified
+                matches only. Guest-confirmed, pending, disputed, and rejected
+                matches remain in your history but do not count toward ranking
+                eligibility.
+              </p>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {officialStats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-2xl border border-court-teal/10 bg-court-mist p-4"
+                >
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-court-ocean">
+                    {stat.label}
+                  </p>
+                  <p className="mt-3 text-2xl font-black text-court-navy">
+                    {stat.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-5 rounded-2xl border border-court-teal/15 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-500">
+              Rankings and leaderboards are not live yet. This record prepares
+              your verified match history for future ranking features.
+            </p>
+          </section>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {setupStats.map((stat) => (
               <article
                 key={stat.label}
                 className="rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-court-mint/50 hover:shadow-glow sm:p-5"
@@ -273,10 +396,6 @@ export default async function DashboardPage() {
               </article>
             ))}
           </div>
-
-          <p className="mt-4 rounded-2xl border border-court-teal/15 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-600 shadow-sm">
-            Your stats include every match saved to your PaddleRank history.
-          </p>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
             <section className="rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm sm:p-6">

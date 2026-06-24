@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { applyOfficialStatsEligibility } from "@/lib/officialStats";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
@@ -60,13 +61,41 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     user.email ||
     "Player";
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select(
-      "full_name, display_name, city, province, region, pickleball_club, skill_level, preferred_play_type, profile_completed",
-    )
-    .eq("user_id", user.id)
-    .maybeSingle<ProfileRow>();
+  const [profileResult, officialWinsResult, officialLossesResult] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select(
+          "full_name, display_name, city, province, region, pickleball_club, skill_level, preferred_play_type, profile_completed",
+        )
+        .eq("user_id", user.id)
+        .maybeSingle<ProfileRow>(),
+      applyOfficialStatsEligibility(
+        supabase
+          .from("match_records")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("result", "win"),
+      ),
+      applyOfficialStatsEligibility(
+        supabase
+          .from("match_records")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("result", "loss"),
+      ),
+    ]);
+
+  const profile = profileResult.data;
+  const officialStatsAvailable =
+    !officialWinsResult.error && !officialLossesResult.error;
+  const officialWins = officialWinsResult.count || 0;
+  const officialLosses = officialLossesResult.count || 0;
+  const rankingEligibleMatches = officialWins + officialLosses;
+  const officialWinRate =
+    officialStatsAvailable && rankingEligibleMatches > 0
+      ? Math.round((officialWins / rankingEligibleMatches) * 100)
+      : 0;
 
   async function saveProfile(formData: FormData) {
     "use server";
@@ -240,6 +269,38 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 Signed in as {user.email}
               </p>
             ) : null}
+
+            <div className="mt-5 rounded-2xl border border-court-teal/15 bg-court-mist p-4">
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-court-ocean">
+                Official Record
+              </p>
+              {!officialStatsAvailable ? (
+                <p className="mt-3 text-lg font-black text-court-navy">
+                  Unavailable
+                </p>
+              ) : rankingEligibleMatches > 0 ? (
+                <>
+                  <p className="mt-3 text-lg font-black text-court-navy">
+                    {officialWins}-{officialLosses} &middot;{" "}
+                    {officialWinRate}% win rate
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-600">
+                    {rankingEligibleMatches} ranking-eligible{" "}
+                    {rankingEligibleMatches === 1 ? "match" : "matches"}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-3 text-sm font-black text-court-navy">
+                    No ranking-eligible matches yet.
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Account-confirmed or admin-verified matches will appear
+                    here.
+                  </p>
+                </>
+              )}
+            </div>
           </aside>
 
           <section className="rounded-3xl border border-court-teal/15 bg-white p-4 shadow-glow sm:p-6 lg:p-7">
