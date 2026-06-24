@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "test": "node --experimental-strip-types --experimental-loader ./tests/extensionless-typescript-loader.mjs --test tests/*.test.ts",
     "build": "next build",
     "start": "next start",
     "type-check": "tsc --noEmit"
