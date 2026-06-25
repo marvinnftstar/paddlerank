@@ -267,6 +267,12 @@ If port `3000` is already being used, Next.js may use `3001`.
 
 ## Check Errors
 
+Run focused automated tests:
+
+```bash
+npm run test
+```
+
 Run TypeScript checking:
 
 ```bash
