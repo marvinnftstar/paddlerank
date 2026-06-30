@@ -1,6 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ClubLogo } from "@/components/ClubLogo";
+import {
+  CLUB_FIELD_LIMITS,
+  getSafeDiscordInviteUrl,
+  getSafeFacebookUrl,
+  parseClubForm,
+} from "@/lib/clubs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
@@ -21,6 +28,8 @@ type ClubRow = {
   home_court: string | null;
   playing_schedule: string | null;
   logo_url: string | null;
+  discord_invite_url: string | null;
+  facebook_url: string | null;
 };
 
 type CurrentUserClubRow = {
@@ -29,93 +38,10 @@ type CurrentUserClubRow = {
   status: "pending" | "approved";
 };
 
-const CLUB_FIELD_LIMITS = {
-  clubName: 120,
-  city: 120,
-  contactPerson: 120,
-  contactEmail: 180,
-  contactNumber: 60,
-  description: 1000,
-  homeCourt: 180,
-  playingSchedule: 180,
-  logoUrl: 500,
-};
-
 const APPROVED_CLUBS_SELECT =
-  "id, club_name, city, description, home_court, playing_schedule, logo_url";
+  "id, club_name, city, description, home_court, playing_schedule, logo_url, discord_invite_url, facebook_url";
 
 const CURRENT_USER_CLUB_SELECT = "id, club_name, status";
-
-function getFormValue(formData: FormData, key: string) {
-  return String(formData.get(key) || "").trim();
-}
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function getSafeLogoUrl(value: string | null) {
-  if (!value) {
-    return null;
-  }
-
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:"
-      ? url.toString()
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-function parseClubForm(formData: FormData) {
-  const clubName = getFormValue(formData, "club_name");
-  const city = getFormValue(formData, "city");
-  const contactPerson = getFormValue(formData, "contact_person");
-  const contactEmail = getFormValue(formData, "contact_email");
-  const contactNumber = getFormValue(formData, "contact_number");
-  const description = getFormValue(formData, "description");
-  const homeCourt = getFormValue(formData, "home_court");
-  const playingSchedule = getFormValue(formData, "playing_schedule");
-  const logoUrl = getFormValue(formData, "logo_url");
-
-  const hasValidLengths =
-    clubName.length <= CLUB_FIELD_LIMITS.clubName &&
-    city.length <= CLUB_FIELD_LIMITS.city &&
-    contactPerson.length <= CLUB_FIELD_LIMITS.contactPerson &&
-    contactEmail.length <= CLUB_FIELD_LIMITS.contactEmail &&
-    contactNumber.length <= CLUB_FIELD_LIMITS.contactNumber &&
-    description.length <= CLUB_FIELD_LIMITS.description &&
-    homeCourt.length <= CLUB_FIELD_LIMITS.homeCourt &&
-    playingSchedule.length <= CLUB_FIELD_LIMITS.playingSchedule &&
-    logoUrl.length <= CLUB_FIELD_LIMITS.logoUrl;
-
-  if (
-    !clubName ||
-    !city ||
-    !contactPerson ||
-    !contactEmail ||
-    !description ||
-    !isValidEmail(contactEmail) ||
-    !hasValidLengths
-  ) {
-    return null;
-  }
-
-  return {
-    club_name: clubName,
-    city,
-    contact_person: contactPerson,
-    contact_email: contactEmail,
-    contact_number: contactNumber || null,
-    description,
-    home_court: homeCourt || null,
-    playing_schedule: playingSchedule || null,
-    logo_url: getSafeLogoUrl(logoUrl),
-    status: "pending",
-  };
-}
 
 export default async function ClubsPage({ searchParams }: ClubsPageProps) {
   const params = await searchParams;
@@ -218,6 +144,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
 
     const { error } = await supabase.from("clubs").insert({
       ...clubValues,
+      status: "pending",
       submitted_by: user.id,
     });
 
@@ -335,6 +262,14 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                       Submit Club Profile
                     </a>
                   ) : null}
+                  {currentUserClub?.status === "approved" ? (
+                    <Link
+                      href="/clubs/manage"
+                      className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-navy px-6 py-3 text-sm font-black text-white shadow-sm transition hover:bg-court-ocean sm:w-auto"
+                    >
+                      Manage Club
+                    </Link>
+                  ) : null}
                   <p className="rounded-2xl border border-court-teal/20 bg-court-mist px-4 py-3 text-sm font-semibold text-court-navy">
                     {clubStatusMessage ||
                       "Club submissions are reviewed before appearing in the directory."}
@@ -402,7 +337,10 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
             ) : (
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {approvedClubs.map((club) => {
-                  const safeLogoUrl = getSafeLogoUrl(club.logo_url);
+                  const safeDiscordUrl = getSafeDiscordInviteUrl(
+                    club.discord_invite_url,
+                  );
+                  const safeFacebookUrl = getSafeFacebookUrl(club.facebook_url);
 
                   return (
                     <article
@@ -410,17 +348,10 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                       className="rounded-2xl border border-court-teal/15 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-court-mint/50 hover:shadow-glow sm:p-5"
                     >
                       <div className="flex items-start gap-4">
-                        {safeLogoUrl ? (
-                          <img
-                            src={safeLogoUrl}
-                            alt={`${club.club_name} logo`}
-                            className="h-14 w-14 rounded-xl border border-court-teal/15 object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-court-mist text-lg font-black text-court-navy">
-                            {club.club_name.slice(0, 1).toUpperCase()}
-                          </div>
-                        )}
+                        <ClubLogo
+                          clubName={club.club_name}
+                          logoUrl={club.logo_url}
+                        />
                         <div className="min-w-0">
                           <h3 className="break-words text-lg font-black text-court-navy">
                             {club.club_name}
@@ -445,6 +376,28 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                         <p className="mt-3 rounded-xl border border-court-teal/15 px-3 py-2 text-sm font-semibold leading-6 text-slate-600">
                           Schedule: {club.playing_schedule}
                         </p>
+                      ) : null}
+
+                      {safeDiscordUrl ? (
+                        <a
+                          href={safeDiscordUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#5865F2] px-4 py-2 text-sm font-black text-white transition hover:bg-[#4752C4]"
+                        >
+                          Join Club Discord
+                        </a>
+                      ) : null}
+
+                      {safeFacebookUrl ? (
+                        <a
+                          href={safeFacebookUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-[#1877F2]/30 bg-white px-4 py-2 text-sm font-black text-[#1877F2] transition hover:bg-[#1877F2] hover:text-white"
+                        >
+                          Visit Club Facebook
+                        </a>
                       ) : null}
                     </article>
                   );
@@ -529,6 +482,32 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                     required
                     maxLength={CLUB_FIELD_LIMITS.clubName}
                     placeholder="Your pickleball club"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
+
+                <label className="sm:col-span-2">
+                  <span className="text-sm font-semibold text-court-navy">
+                    Discord Invite URL
+                  </span>
+                  <input
+                    name="discord_invite_url"
+                    type="url"
+                    maxLength={CLUB_FIELD_LIMITS.discordInviteUrl}
+                    placeholder="https://discord.gg/..."
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
+                  />
+                </label>
+
+                <label className="sm:col-span-2">
+                  <span className="text-sm font-semibold text-court-navy">
+                    Facebook Page / Group URL
+                  </span>
+                  <input
+                    name="facebook_url"
+                    type="url"
+                    maxLength={CLUB_FIELD_LIMITS.facebookUrl}
+                    placeholder="https://www.facebook.com/..."
                     className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
                   />
                 </label>
@@ -639,6 +618,9 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                     placeholder="https://..."
                     className="mt-2 w-full rounded-xl border border-slate-200 bg-court-mist px-4 py-3 text-court-navy outline-none transition placeholder:text-slate-400 focus:border-court-mint focus:bg-white"
                   />
+                  <span className="mt-2 block text-xs text-slate-500">
+                    HTTPS image URLs only.
+                  </span>
                 </label>
 
                 <div className="sm:col-span-2">
