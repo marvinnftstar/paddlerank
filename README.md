@@ -31,8 +31,9 @@ The page includes:
 
 Club onboarding starts with simple club profile submissions. New submissions
 are saved as `pending` and must be manually changed to `approved` in Supabase
-before they appear in the club directory. It does not include club accounts,
-club dashboards, calendars, payments, or member-limit logic.
+before they appear in the club directory. Approved submitters can manage their
+own club profile and publish optional Discord and Facebook community links.
+Both remain external links; there is no in-app chat or social authentication.
 
 ## Logo
 
@@ -187,6 +188,8 @@ The club table stores:
 * optional home court
 * optional playing schedule
 * optional logo URL
+* optional Discord invite URL
+* optional Facebook Page or Group URL
 * approval status
 
 New club submissions are saved with `status = 'pending'`. Pending clubs are not
@@ -200,8 +203,22 @@ SQL file so users can see their own pending submission status:
 supabase/update_clubs_read_policy_for_submitters.sql
 ```
 
-The club logo is URL-only for now. Do not upload files or storage objects for
-club logos yet.
+Then run this migration to add Discord links and approved-owner profile
+management:
+
+```text
+supabase/add_club_owner_management_and_discord.sql
+```
+
+To add the optional Facebook Page or Group link, also run:
+
+```text
+supabase/add_club_facebook_url.sql
+```
+
+Club logos remain URL-only. Logo URLs must use HTTPS. The migration allows an
+approved owner to update only their own club's editable profile columns; status,
+ownership, IDs, and timestamps remain protected.
 
 ## Environment Variables
 
