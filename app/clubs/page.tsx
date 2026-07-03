@@ -9,7 +9,6 @@ import {
   parseClubForm,
 } from "@/lib/clubs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -59,12 +58,6 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
     redirect("/login");
   }
 
-  const access = await checkWaitlistAccess(supabase, user, "clubs");
-
-  if (!access.isApproved) {
-    redirect("/early-access");
-  }
-
   const clubsResult = await supabase
     .from("clubs")
     .select(APPROVED_CLUBS_SELECT)
@@ -108,12 +101,6 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
 
     if (!user) {
       redirect("/login");
-    }
-
-    const access = await checkWaitlistAccess(supabase, user, "club-submit");
-
-    if (!access.isApproved) {
-      redirect("/early-access");
     }
 
     const { data: existingClubSubmissions, error: existingClubError } =

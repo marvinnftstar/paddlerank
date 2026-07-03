@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { applyOfficialStatsEligibility } from "@/lib/officialStats";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +37,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    redirect("/early-access");
+    redirect("/login");
   }
 
   const {
@@ -47,12 +46,6 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
   if (!user) {
     redirect("/login");
-  }
-
-  const access = await checkWaitlistAccess(supabase, user, "profile");
-
-  if (!access.isApproved) {
-    redirect("/early-access");
   }
 
   const fallbackName =
@@ -103,7 +96,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     const supabase = await createSupabaseServerClient();
 
     if (!supabase) {
-      redirect("/early-access");
+      redirect("/login");
     }
 
     const {
@@ -112,12 +105,6 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
     if (!user) {
       redirect("/login");
-    }
-
-    const access = await checkWaitlistAccess(supabase, user, "profile-save");
-
-    if (!access.isApproved) {
-      redirect("/early-access");
     }
 
     const fullName = getFormValue(formData, "full_name");

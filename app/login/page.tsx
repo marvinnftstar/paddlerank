@@ -2,9 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./LoginForm";
-import { getSafeNextPath, isMatchConfirmationPath } from "@/lib/safeNextPath";
+import { getSafeNextPath } from "@/lib/safeNextPath";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -24,14 +23,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     } = await supabase.auth.getUser();
 
     if (user) {
-      const access = await checkWaitlistAccess(supabase, user, "login");
-      redirect(
-        access.isApproved
-          ? nextPath
-          : isMatchConfirmationPath(nextPath)
-            ? nextPath
-            : "/early-access",
-      );
+      redirect(nextPath);
     }
   }
 

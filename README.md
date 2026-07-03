@@ -2,7 +2,7 @@
 
 **Track. Compete. Rank Up.**
 
-PaddleRank is a one-page waitlist landing page for an upcoming pickleball match tracking and ranking platform for players across the Philippines.
+PaddleRank is a live pickleball match tracking and ranking platform for players across the Philippines.
 
 ## Tech Stack
 
@@ -14,16 +14,15 @@ PaddleRank is a one-page waitlist landing page for an upcoming pickleball match 
 
 ## Current Version
 
-The current MVP focuses on player early access, match tracking, and lightweight
-club onboarding.
+The current MVP focuses on Google-authenticated player access, match tracking,
+player profiles, and lightweight club onboarding.
 
 The page includes:
 
 * PaddleRank logo
 * App name and tagline
-* Short waitlist description
-* Supabase-powered waitlist form
-* Login link for approved players
+* Google login for players
+* Immediate access to the player dashboard after sign-in
 * Logged-in Clubs page with approved club directory
 * Supabase-powered club submission form for review
 * Small feature highlights
@@ -49,59 +48,18 @@ It is loaded in the app as:
 /PaddleRank.png
 ```
 
-## Supabase Setup
+## Legacy Waitlist Data
 
-Create a Supabase table named `waitlist_signups`.
-
-Run this SQL in the Supabase SQL Editor:
-
-```sql
-create table if not exists waitlist_signups (
-  id uuid primary key default gen_random_uuid(),
-  full_name text not null,
-  email text not null unique,
-  city_province text,
-  skill_level text,
-  preferred_play_type text,
-  message text,
-  access_status text not null default 'pending',
-  created_at timestamp with time zone default now()
-);
-
-alter table waitlist_signups
-add constraint waitlist_signups_access_status_check
-check (access_status in ('pending', 'approved', 'blocked'));
-
-alter table waitlist_signups enable row level security;
-
-create policy "Allow public waitlist signups"
-on waitlist_signups
-for insert
-to anon
-with check (true);
-
-create policy "Allow authenticated users to read own waitlist status"
-on waitlist_signups
-for select
-to authenticated
-using (lower(email) = lower(auth.jwt() ->> 'email'));
-```
-
-Existing projects can use the local SQL file below to add the early access
-status column. Apply it manually in Supabase only after reviewing it:
-
-```text
-supabase/add_waitlist_access_status.sql
-```
-
-Only users with `access_status = 'approved'` can open `/dashboard` and
-`/profile` or `/matches`. New waitlist signups are `pending` by default.
+The live app no longer reads from or writes to `waitlist_signups`. The existing
+table, records, access-status migration, and historical schema definitions are
+retained for a later reviewed database cleanup. Do not apply
+`supabase/add_waitlist_access_status.sql` to new environments.
 
 ## Player Profile Setup
 
 PaddleRank uses a `profiles` table for basic player profile details.
 
-Run this SQL in the Supabase SQL Editor after the waitlist table is ready:
+Run this SQL in the Supabase SQL Editor:
 
 ```text
 supabase/create_profiles_table.sql

@@ -36,12 +36,12 @@ export function Hero() {
               >
                 Login
               </Link>
-              <a
-                href="#waitlist"
+              <Link
+                href="/login"
                 className="inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-full bg-court-green px-4 py-2 text-sm font-black text-court-navy shadow-glow transition hover:bg-white sm:px-5"
               >
-                Join the Waitlist
-              </a>
+                Get Started
+              </Link>
             </div>
           </div>
         </header>
@@ -70,12 +70,12 @@ export function Hero() {
           </p>
 
           <div className="mt-5 flex w-full max-w-sm flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row">
-            <a
-              href="#waitlist"
+            <Link
+              href="/login"
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-court-green px-8 py-4 text-base font-black text-court-navy shadow-glow transition hover:bg-white"
             >
-              Join the Waitlist
-            </a>
+              Sign in with Google
+            </Link>
             <a
               href="#clubs"
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/50 bg-white/10 px-8 py-4 text-base font-black text-white transition hover:border-white hover:bg-white hover:text-court-navy"
@@ -85,7 +85,7 @@ export function Hero() {
           </div>
 
           <p className="mt-4 inline-flex max-w-xs items-center justify-center rounded-full border border-court-green/60 bg-court-green/15 px-4 py-2 text-center text-xs font-black uppercase tracking-wide text-court-green sm:max-w-none sm:text-sm">
-            Limited early access: First 100 registered players only.
+            Free to get started. Built for the pickleball community.
           </p>
         </div>
       </div>
