@@ -42,9 +42,9 @@ export function ClubInterestForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-3xl border border-court-teal/20 bg-white p-5 shadow-glow sm:p-6"
+      className="rounded-[2rem] border border-[#e1e6dd] bg-[#f7f8f3] p-5 shadow-[0_24px_60px_rgba(16,44,39,0.10)] sm:p-7"
     >
-      <h3 className="text-2xl font-black text-court-navy">
+      <h3 className="text-2xl font-black tracking-tight text-[#102c27]">
         Register your club interest
       </h3>
       <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -149,7 +149,7 @@ export function ClubInterestForm() {
       <button
         type="submit"
         disabled={isOpeningGmail}
-        className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-court-mint px-6 py-3 text-sm font-black text-white transition hover:bg-court-ocean disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#102c27] px-6 py-3 text-sm font-black text-white transition hover:bg-[#1c4940] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isOpeningGmail ? "Opening Gmail..." : "Register Your Club"}
       </button>

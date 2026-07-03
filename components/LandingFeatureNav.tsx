@@ -44,11 +44,11 @@ export function LandingFeatureNav() {
   }, [comingSoonFeature]);
 
   const itemClassName =
-    "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-2.5 py-2 text-xs font-extrabold text-white/90 transition hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-court-green sm:px-3";
+    "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs font-extrabold text-[#24443e] transition hover:bg-[#e9ede5] hover:text-[#102c27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#102c27] sm:px-4";
 
   return (
     <>
-      <nav aria-label="Explore PaddleRank features" className="grid grid-cols-3 rounded-full border border-white/20 bg-white/10 p-1 backdrop-blur-sm">
+      <nav aria-label="Explore PaddleRank features" className="grid grid-cols-3 rounded-full border border-[#dfe5dc] bg-white p-1 shadow-sm">
         <button type="button" onClick={() => setComingSoonFeature("Rankings")} className={itemClassName}>
           <TrophyIcon />
           <span>Rankings</span>
@@ -64,7 +64,7 @@ export function LandingFeatureNav() {
       </nav>
 
       {comingSoonFeature ? (
-        <div role="status" aria-live="polite" className="fixed bottom-5 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-white/25 bg-court-navy/95 px-5 py-4 text-left text-white shadow-glow backdrop-blur sm:bottom-7">
+        <div role="status" aria-live="polite" className="fixed bottom-5 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-white/20 bg-[#102c27]/95 px-5 py-4 text-left text-white shadow-xl backdrop-blur sm:bottom-7">
           <p className="font-black">{comingSoonFeature} are coming soon.</p>
           <p className="mt-1 text-sm text-white/75">We&apos;re building more ways to play and connect.</p>
         </div>
