@@ -157,7 +157,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
     const supabase = await createSupabaseServerClient();
     await supabase?.auth.signOut();
-    redirect("/login");
+    redirect("/");
   }
 
   return (

@@ -322,7 +322,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
     const supabase = await createSupabaseServerClient();
     await supabase?.auth.signOut();
-    redirect("/login");
+    redirect("/");
   }
 
   return (

@@ -172,7 +172,7 @@ export default async function DashboardPage() {
 
     const supabase = await createSupabaseServerClient();
     await supabase?.auth.signOut();
-    redirect("/login");
+    redirect("/");
   }
 
   return (

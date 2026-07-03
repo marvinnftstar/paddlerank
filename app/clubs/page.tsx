@@ -148,7 +148,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
 
     const supabase = await createSupabaseServerClient();
     await supabase?.auth.signOut();
-    redirect("/login");
+    redirect("/");
   }
 
   return (
