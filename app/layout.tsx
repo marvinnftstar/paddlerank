@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PaddleRank | Track. Compete. Rank Up.",
   description:
-    "Join the PaddleRank waitlist for pickleball match tracking and rankings in the Philippines.",
+    "Track pickleball matches, follow your progress, and connect with clubs across the Philippines.",
 };
 
 export default function RootLayout({

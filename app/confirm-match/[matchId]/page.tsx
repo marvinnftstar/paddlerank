@@ -9,7 +9,6 @@ import {
 } from "@/lib/matches";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -71,15 +70,6 @@ export default async function ConfirmMatchPage({
   } = sessionSupabase
     ? await sessionSupabase.auth.getUser()
     : { data: { user: null } };
-
-  const viewerAccess =
-    sessionSupabase && viewer
-      ? await checkWaitlistAccess(
-          sessionSupabase,
-          viewer,
-          "match-confirmation-page",
-        )
-      : { isApproved: false, accessStatus: null };
 
   let match: MatchConfirmationRow | null = null;
   let loadError = !supabase || !hasValidLink;
@@ -188,17 +178,6 @@ export default async function ConfirmMatchPage({
         );
       }
 
-      const access = await checkWaitlistAccess(
-        sessionSupabase,
-        respondingUser,
-        "match-account-confirmation",
-      );
-
-      if (!access.isApproved) {
-        redirect(
-          `/confirm-match/${submittedMatchId}?token=${submittedToken}&error=account-not-approved`,
-        );
-      }
     }
 
     let updateQuery = supabase
@@ -249,7 +228,7 @@ export default async function ConfirmMatchPage({
   const isOwner = Boolean(match && viewer?.id === match.user_id);
   const canConfirmAsGuest = canRespond && !isOwner;
   const canConfirmWithAccount = Boolean(
-    canConfirmAsGuest && viewer && viewerAccess.isApproved,
+    canConfirmAsGuest && viewer,
   );
   const returnPath = `/confirm-match/${matchId}?token=${encodeURIComponent(token)}`;
   const loginHref = `/login?next=${encodeURIComponent(returnPath)}`;
@@ -342,14 +321,6 @@ export default async function ConfirmMatchPage({
                 <p role="status" className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
                   You logged this match, so you cannot confirm it yourself. You
                   can still dispute it if the details are incorrect.
-                </p>
-              ) : null}
-
-              {canRespond && viewer && !viewerAccess.isApproved && !isOwner ? (
-                <p role="status" className="mt-6 rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-blue-900">
-                  Account-confirmed status requires an early-access-approved
-                  PaddleRank account. You can still confirm as a guest or
-                  dispute this match.
                 </p>
               ) : null}
 

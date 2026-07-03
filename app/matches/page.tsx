@@ -8,7 +8,6 @@ import {
   type MatchVerificationStatus,
 } from "@/lib/matches";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -145,12 +144,6 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     redirect("/login");
   }
 
-  const access = await checkWaitlistAccess(supabase, user, "matches");
-
-  if (!access.isApproved) {
-    redirect("/early-access");
-  }
-
   let historyResult = await supabase
     .from("match_records")
     .select(MATCH_HISTORY_SELECT)
@@ -219,12 +212,6 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
       redirect("/login");
     }
 
-    const access = await checkWaitlistAccess(supabase, user, "match-save");
-
-    if (!access.isApproved) {
-      redirect("/early-access");
-    }
-
     const matchValues = parseMatchForm(formData);
 
     if (!matchValues) {
@@ -259,12 +246,6 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
     if (!user) {
       redirect("/login");
-    }
-
-    const access = await checkWaitlistAccess(supabase, user, "match-update");
-
-    if (!access.isApproved) {
-      redirect("/early-access");
     }
 
     const matchId = getFormValue(formData, "match_id");
@@ -314,12 +295,6 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
       redirect("/login");
     }
 
-    const access = await checkWaitlistAccess(supabase, user, "match-delete");
-
-    if (!access.isApproved) {
-      redirect("/early-access");
-    }
-
     const matchId = getFormValue(formData, "match_id");
 
     if (!isValidUuid(matchId)) {
@@ -347,7 +322,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
     const supabase = await createSupabaseServerClient();
     await supabase?.auth.signOut();
-    redirect("/login");
+    redirect("/");
   }
 
   return (

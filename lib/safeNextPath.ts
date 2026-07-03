@@ -26,8 +26,3 @@ export function getSafeNextPath(
     return fallback;
   }
 }
-
-export function isMatchConfirmationPath(path: string) {
-  const url = new URL(path, LOCAL_URL);
-  return /^\/confirm-match\/[0-9a-f-]+$/i.test(url.pathname);
-}

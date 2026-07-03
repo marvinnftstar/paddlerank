@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { ClubManagementForm } from "@/components/ClubManagementForm";
 import { parseClubForm } from "@/lib/clubs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -38,9 +37,6 @@ export default async function ManageClubPage({ searchParams }: ManageClubPagePro
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const access = await checkWaitlistAccess(supabase, user, "club-manage");
-  if (!access.isApproved) redirect("/early-access");
-
   const result = await supabase
     .from("clubs")
     .select(OWNED_CLUB_SELECT)
@@ -60,9 +56,6 @@ export default async function ManageClubPage({ searchParams }: ManageClubPagePro
     if (!supabase) redirect("/login");
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect("/login");
-
-    const access = await checkWaitlistAccess(supabase, user, "club-manage-save");
-    if (!access.isApproved) redirect("/early-access");
 
     const values = parseClubForm(formData);
     if (!values) redirect("/clubs/manage?error=invalid-fields");

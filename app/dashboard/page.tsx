@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { applyOfficialStatsEligibility } from "@/lib/officialStats";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { checkWaitlistAccess } from "@/lib/waitlistAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +28,7 @@ export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    redirect("/early-access");
+    redirect("/login");
   }
 
   const {
@@ -37,13 +36,7 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/early-access");
-  }
-
-  const access = await checkWaitlistAccess(supabase, user, "dashboard");
-
-  if (!access.isApproved) {
-    redirect("/early-access");
+    redirect("/login");
   }
 
   const displayName =
@@ -179,7 +172,7 @@ export default async function DashboardPage() {
 
     const supabase = await createSupabaseServerClient();
     await supabase?.auth.signOut();
-    redirect("/login");
+    redirect("/");
   }
 
   return (
